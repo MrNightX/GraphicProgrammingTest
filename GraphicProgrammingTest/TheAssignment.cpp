@@ -69,7 +69,7 @@ float armRotate2 = 0;
 float armRotate3 = 0;
 const float ROTATION_INCREMENT = 5.0f;
 
-
+//what
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------switch case placing
 LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
