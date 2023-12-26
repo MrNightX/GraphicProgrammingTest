@@ -212,6 +212,41 @@ void drawSphere(float r)
 	gluSphere(sphere, r, 30, 30);         //draw sphere
 	gluDeleteQuadric(sphere);				//destroy obj
 }
+
+void drawCube(float x, float y, float z) // keep in mind that the cube always draw from the origin, but the z is pointing away from ... you
+{
+	//float P_X = x/2, P_Y = y/2 , P_Z = z/2;
+	glLineWidth(1);
+	glColor3f(1, 1, 1); 
+
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(0, 0, 0);
+		glVertex3f(x, 0, 0);
+		glVertex3f(x, y, 0);
+		glVertex3f(0, y, 0);
+	glEnd();
+
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(0, y, 0);
+		glVertex3f(x, y, 0);
+		glVertex3f(x, y, -z);
+		glVertex3f(0, y, -z);
+	glEnd();
+
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(0, y, -z);
+		glVertex3f(x, y, -z);
+		glVertex3f(x, 0, -z);
+		glVertex3f(0, 0, -z);
+	glEnd();
+
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(0, 0, -z);
+		glVertex3f(0, 0, 0);
+		glVertex3f(x, 0, 0);
+		glVertex3f(x, 0, -z);
+	glEnd();
+}
 void arm() {
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -711,11 +746,25 @@ void arm() {
 	glPopMatrix();
 
 }
+
+void leg()
+{
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+
+	glLoadIdentity();
+	glRotatef(armRotate, 0.0, 0.0, 1.0);
+	glRotatef(armRotate2, 0.0, 1.0, 0.0);
+	glRotatef(armRotate3, 1.0, 0.0, 0.0);
+	drawCube(0.6f, 0.4f, 0.4f);
+
+}
 void display()
 {
 
-	arm();
-
+	//arm();
+	leg();
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------Void End 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nCmdShow)
