@@ -385,7 +385,7 @@ void drawCube(float x, float y, float z) // keep in mind that the cube will alwa
 
 		glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON);//ps: I made sure this can be safely converted into GL_Polygon
-			glVertex3f(0, 0, 0);
+			glVertex3f(0, 0, 0); //front
 			glVertex3f(x, 0, 0);
 			glVertex3f(x, y, 0);
 			glVertex3f(0, y, 0);
@@ -393,7 +393,7 @@ void drawCube(float x, float y, float z) // keep in mind that the cube will alwa
 
 		glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON);
-			glVertex3f(0, y, 0);
+			glVertex3f(0, y, 0); //top
 			glVertex3f(x, y, 0);
 			glVertex3f(x, y, -z);
 			glVertex3f(0, y, -z);
@@ -401,7 +401,7 @@ void drawCube(float x, float y, float z) // keep in mind that the cube will alwa
 
 		glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON);
-			glVertex3f(0, y, -z);
+			glVertex3f(0, y, -z); //back
 			glVertex3f(x, y, -z);
 			glVertex3f(x, 0, -z);
 			glVertex3f(0, 0, -z);
@@ -409,13 +409,103 @@ void drawCube(float x, float y, float z) // keep in mind that the cube will alwa
 
 		glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON);
-			glVertex3f(0, 0, -z);
+			glVertex3f(0, 0, -z);  //bottom
 			glVertex3f(0, 0, 0);
 			glVertex3f(x, 0, 0);
 			glVertex3f(x, 0, -z);
 		glEnd();
+
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+			  //left side
+			glVertex3f(0, 0, 0);
+			glVertex3f(0, 0, -z);
+			glVertex3f(0, y, -z);
+			glVertex3f(0, y, 0);
+		glEnd();
+
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+		//right side
+			glVertex3f(x, 0, 0);
+			glVertex3f(x, 0, -z);
+			glVertex3f(x, y, -z);
+			glVertex3f(x, y, 0);
+		glEnd();
+
 	glPopMatrix();
 }
+
+void drawIrregularCube(float TopSize, float BottomSize, float height) //make cube with different top size and bottom size
+{
+	glPushMatrix();
+	float TopWidthSize = TopSize;
+	float BottomWidthSize = BottomSize;
+	//Top
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(-TopSize / 2, height / 2, -TopWidthSize/2);
+	glVertex3f(TopSize / 2, height / 2, -TopWidthSize / 2);
+	glVertex3f(TopSize / 2, height / 2, TopWidthSize / 2);
+	glVertex3f(-TopSize / 2, height / 2, TopWidthSize / 2);
+
+	glEnd();
+
+	//Bottom
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(-BottomSize / 2, -height / 2, -BottomWidthSize / 2);
+	glVertex3f(BottomSize / 2, -height / 2, -BottomWidthSize / 2);
+	glVertex3f(BottomSize / 2, -height / 2, BottomWidthSize / 2);
+	glVertex3f(-BottomSize / 2, -height / 2, BottomWidthSize / 2);
+
+	glEnd();
+
+	//front
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(-TopSize / 2, height / 2, -TopWidthSize / 2);
+	glVertex3f(-BottomSize / 2, -height / 2, -BottomWidthSize / 2);
+	glVertex3f(BottomSize / 2, -height / 2, -BottomWidthSize / 2);
+	glVertex3f(TopSize / 2, height / 2, -TopWidthSize / 2);
+
+	glEnd();
+	//right
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(TopSize / 2, height / 2, -TopWidthSize / 2);
+	glVertex3f(BottomSize / 2, -height / 2, -BottomWidthSize / 2);
+	glVertex3f(BottomSize / 2, -height / 2, BottomWidthSize / 2);
+	glVertex3f(TopSize / 2, height / 2, TopWidthSize / 2);
+
+	glEnd();
+	//back
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(TopSize / 2, height / 2, TopWidthSize / 2);
+	glVertex3f(BottomSize / 2, -height / 2, BottomWidthSize / 2);
+	glVertex3f(-BottomSize / 2, -height / 2, BottomWidthSize / 2);
+	glVertex3f(-TopSize / 2, height / 2, TopWidthSize / 2);
+
+	glEnd();
+	//left
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(-TopSize / 2, height / 2, TopWidthSize / 2);
+	glVertex3f(-BottomSize / 2, -height / 2, BottomWidthSize / 2);
+	glVertex3f(-BottomSize / 2, -height / 2, -BottomWidthSize / 2);
+	glVertex3f(-TopSize / 2, height / 2, -TopWidthSize / 2);
+
+	glEnd();
+	glPopMatrix();
+}
+
 void arm() 
 {
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -929,11 +1019,13 @@ void leg()
 	//drawTrianglePrism(0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.1f);
 	//drawRightTriangle(0.3f, -0.6f, 0.1f);
 	//drawSidedTriangle(0.2, 0.5, 0.1);
+	//drawIrregularCube(0.2, 0.5, 1.0);
 
 	//glScalef(0.5, 0.5, 0.5);
 	//glTranslatef(0, -0.75f, 0); //original transformation
 
-	glTranslatef(0, -0.4f, 0.0f); //focusing on that thicc thigh
+	//glTranslatef(0, -0.4f, 0.0f); //focusing on that thicc thigh
+	glTranslatef(0, 0.3f, 0.0f); // focusing on those slender shin
 	glColor3f(1, 1, 1);
 #pragma region Thigh
 	glPushMatrix(); 
@@ -1085,8 +1177,6 @@ void leg()
 		glEnd();
 #pragma endregion
 
-		
-
 #pragma region Thigh Back armor
 		{
 			glPushMatrix();
@@ -1237,6 +1327,10 @@ void leg()
 	{
 		glRotatef(-armRotate3/2 , 1.0, 0.0, 0.0);
 	}
+	else
+	{
+		glRotatef(armRotate3, 1.0, 0.0, 0.0);
+	}
 
 
 	glColor3f(1, 1, 1);
@@ -1250,13 +1344,40 @@ void leg()
 #pragma region Shin
 	glPushMatrix();
 	glTranslatef(0.0f, -0.3f, 0.0f);
-	drawCube(0.25f, 0.5f, 0.25f);
+	//drawCube(0.25f, 0.5f, 0.25f);
+
+		//Fun part here
+		glPushMatrix();
+		glTranslatef(0.0f, 0.2f, 0.0f);
+		glColor3f(1.0, 1.0, 0.0);
+		drawIrregularCube(0.2, 0.25, 0.1);
+
+			glPushMatrix();
+			glTranslatef(0.0, 0.0, 0.025);
+			glScalef(0.25, 1.0, 1.0);
+			drawIrregularCube(0.2, 0.25, 0.1);
+			glPopMatrix();
+		glPopMatrix();
+		
+		glPushMatrix();
+		glTranslatef(0.0f, -0.075f, 0.0f);
+		glColor3f(1.0, 1.0, 0.0);
+		drawIrregularCube(0.25, 0.15, 0.45);
+
+			glPushMatrix();
+			glTranslatef(0.0, 0.0, 0.025);
+			glScalef(0.25, 1.0, 1.0);
+			drawIrregularCube(0.25, 0.15, 0.45);
+			glPopMatrix();
+		glPopMatrix();
+
 	glPopMatrix();
 #pragma endregion
 
 #pragma region ankle
 	glPushMatrix();
 	glTranslatef(0.0f, -0.6f, 0.0f);
+	glColor3f(1.0, 1.0, 1.0);
 	drawCube(0.1f, 0.1f, 0.1f);
 	glPopMatrix();
 #pragma endregion
