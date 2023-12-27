@@ -69,7 +69,7 @@ float armRotate2 = 0;
 float armRotate3 = 0;
 const float ROTATION_INCREMENT = 5.0f;
 
-//what
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------switch case placing
 LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -213,41 +213,95 @@ void drawSphere(float r)
 	gluDeleteQuadric(sphere);				//destroy obj
 }
 
-void drawCube(float x, float y, float z) // keep in mind that the cube always draw from the origin, but the z is pointing away from ... you
+void drawTrianglePrism(float P1x, float P1y, float P2x, float P2y, float P3x, float P3y, float Thickness) //Drawing on the center of the z, this can get derailled very quickly
 {
-	//float P_X = x/2, P_Y = y/2 , P_Z = z/2;
-	glLineWidth(1);
-	glColor3f(1, 1, 1); 
+	glPushMatrix();
+	glColor3f(0.0, 0.5, 1.0);
+	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glBegin(GL_POLYGON);
 
-	glBegin(GL_LINE_LOOP);
-		glVertex3f(0, 0, 0);
-		glVertex3f(x, 0, 0);
-		glVertex3f(x, y, 0);
-		glVertex3f(0, y, 0);
-	glEnd();
+	glVertex3f(P1x, P1y, Thickness / 2);
+	glVertex3f(P2x, P2y, Thickness / 2);
+	glVertex3f(P3x, P3y, Thickness / 2);
 
-	glBegin(GL_LINE_LOOP);
-		glVertex3f(0, y, 0);
-		glVertex3f(x, y, 0);
-		glVertex3f(x, y, -z);
-		glVertex3f(0, y, -z);
 	glEnd();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glBegin(GL_POLYGON);
 
-	glBegin(GL_LINE_LOOP);
-		glVertex3f(0, y, -z);
-		glVertex3f(x, y, -z);
-		glVertex3f(x, 0, -z);
-		glVertex3f(0, 0, -z);
-	glEnd();
+	glVertex3f(P1x, P1y, Thickness / 2);
+	glVertex3f(P2x, P2y, Thickness / 2);
+	glVertex3f(P2x, P2y, -Thickness / 2);
+	glVertex3f(P1x, P1y, -Thickness / 2);
 
-	glBegin(GL_LINE_LOOP);
-		glVertex3f(0, 0, -z);
-		glVertex3f(0, 0, 0);
-		glVertex3f(x, 0, 0);
-		glVertex3f(x, 0, -z);
 	glEnd();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(P2x, P2y, Thickness / 2);
+	glVertex3f(P3x, P3y, Thickness / 2);
+	glVertex3f(P3x, P3y, -Thickness / 2);
+	glVertex3f(P2x, P2y, -Thickness / 2);
+
+	glVertex3f(P3x, P3y, Thickness / 2);
+	glVertex3f(P3x, P3y, -Thickness / 2);
+	glVertex3f(P1x, P1y, -Thickness / 2);
+	glVertex3f(P1x, P1y, Thickness / 2);
+
+	glEnd();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(P1x, P1y, -Thickness / 2);
+	glVertex3f(P2x, P2y, -Thickness / 2);
+	glVertex3f(P3x, P3y, -Thickness / 2);
+
+	glEnd();
+	glPopMatrix();
 }
-void arm() {
+
+void drawCube(float x, float y, float z) // keep in mind that the cube will always draw and center on the origin, but the z is pointing away from ... you
+{
+	float P_X = x/2, P_Y = y/2 , P_Z = z/2;
+	glPushMatrix();
+	glTranslatef(-P_X, -P_Y, P_Z);
+		
+
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);//ps: I made sure this can be safely converted into GL_Polygon
+			glVertex3f(0, 0, 0);
+			glVertex3f(x, 0, 0);
+			glVertex3f(x, y, 0);
+			glVertex3f(0, y, 0);
+		glEnd();
+
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+			glVertex3f(0, y, 0);
+			glVertex3f(x, y, 0);
+			glVertex3f(x, y, -z);
+			glVertex3f(0, y, -z);
+		glEnd();
+
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+			glVertex3f(0, y, -z);
+			glVertex3f(x, y, -z);
+			glVertex3f(x, 0, -z);
+			glVertex3f(0, 0, -z);
+		glEnd();
+
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+			glVertex3f(0, 0, -z);
+			glVertex3f(0, 0, 0);
+			glVertex3f(x, 0, 0);
+			glVertex3f(x, 0, -z);
+		glEnd();
+	glPopMatrix();
+}
+void arm() 
+{
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -749,21 +803,371 @@ void arm() {
 
 void leg()
 {
+	glLoadIdentity();
+
+	glPushMatrix();
+	glRotatef(armRotate, 0.0, 0.0, 1.0);
+	glRotatef(armRotate2, 0.0, 1.0, 0.0);
+	glRotatef(armRotate3, 1.0, 0.0, 0.0);
+
+	//drawTrianglePrism(0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.1f);
+
+	//glScalef(0.5, 0.5, 0.5);
+	//glTranslatef(0, -0.75f, 0);
+
+	glTranslatef(0, -0.4f, 0.0f); //focusing on that thicc thigh
+	glColor3f(1, 1, 1);
+#pragma region Thigh
+	glPushMatrix(); 
+	
+	glTranslatef(0, 0.4f, 0);
+	drawCube(0.2f, 0.7f, 0.2f);
+	
+		//Real fun begins here
+		glPushMatrix();
+#pragma region Thigh front armor
+		glColor3f(0.5, 0.0, 1.0);
+		glLineWidth(5);
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+		 
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(0.0, 0.35, -0.175); //right frontface
+		glVertex3f(0.0, -0.01, -0.225);
+		glVertex3f(0.0, -0.4, -0.175);
+		glVertex3f(0.175, -0.1, -0.05);
+		glVertex3f(0.175, 0.35, -0.05);
+
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(0.0, 0.35, -0.125);
+		glVertex3f(0.0, -0.01, -0.205);
+		glVertex3f(0.0, -0.4, -0.125);
+		glVertex3f(0.175, -0.1, -0.03);
+		glVertex3f(0.175, 0.35, -0.03);
+
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(0.0, 0.35, -0.175);
+		glVertex3f(0.0, -0.01, -0.225);
+		glVertex3f(0.0, -0.01, -0.205);
+		glVertex3f(0.0, 0.35, -0.125);
+
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(0.0, -0.01, -0.225);
+		glVertex3f(0.0, -0.4, -0.175);
+		glVertex3f(0.0, -0.4, -0.125);
+		glVertex3f(0.0, -0.01, -0.205);
+
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(0.0, -0.4, -0.175);
+		glVertex3f(0.175, -0.1, -0.05);
+		glVertex3f(0.175, -0.1, -0.03);
+		glVertex3f(0.0, -0.4, -0.125);
+
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(0.175, -0.1, -0.05);
+		glVertex3f(0.175, 0.35, -0.05);
+		glVertex3f(0.175, 0.35, -0.03);
+		glVertex3f(0.175, -0.1, -0.03);
+
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(0.175, 0.35, -0.05);
+		glVertex3f(0.0, 0.35, -0.175);
+		glVertex3f(0.0, 0.35, -0.125);
+		glVertex3f(0.175, 0.35, -0.03);
+
+		glEnd();
+
+		glColor3f(0.5, 0.0, 1.0);
+		glLineWidth(5);
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(0.0, 0.35, -0.175); //left frontface
+		glVertex3f(0.0, -0.01, -0.225);
+		glVertex3f(0.0, -0.4, -0.175);
+		glVertex3f(-0.175, -0.1, -0.05);
+		glVertex3f(-0.175, 0.35, -0.05);
+
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(0.0, 0.35, -0.125);
+		glVertex3f(0.0, -0.01, -0.205);
+		glVertex3f(0.0, -0.4, -0.125);
+		glVertex3f(-0.175, -0.1, -0.03);
+		glVertex3f(-0.175, 0.35, -0.03);
+
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(0.0, 0.35, -0.175);
+		glVertex3f(0.0, -0.01, -0.225);
+		glVertex3f(0.0, -0.01, -0.205);
+		glVertex3f(0.0, 0.35, -0.125);
+
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(0.0, -0.01, -0.225);
+		glVertex3f(0.0, -0.4, -0.175);
+		glVertex3f(0.0, -0.4, -0.125);
+		glVertex3f(0.0, -0.01, -0.205);
+
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(0.0, -0.4, -0.175);
+		glVertex3f(-0.175, -0.1, -0.05);
+		glVertex3f(-0.175, -0.1, -0.03);
+		glVertex3f(0.0, -0.4, -0.125);
+
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(-0.175, -0.1, -0.05);
+		glVertex3f(-0.175, 0.35, -0.05);
+		glVertex3f(-0.175, 0.35, -0.03);
+		glVertex3f(-0.175, -0.1, -0.03);
+
+		glEnd();
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glBegin(GL_POLYGON);
+
+		glVertex3f(-0.175, 0.35, -0.05);
+		glVertex3f(0.0, 0.35, -0.175);
+		glVertex3f(0.0, 0.35, -0.125);
+		glVertex3f(-0.175, 0.35, -0.03);
+
+		glEnd();
+#pragma endregion
+
+#pragma region Thigh Back armor
+		{
+			glPushMatrix();
+			glTranslatef(0.0, 0.35, 0.1); //upper thigh armor
+			glPushMatrix();
+			glRotatef(-15, 1.0, 0.0, 0.0);
+			drawTrianglePrism(0.17, 0.0, -0.17, 0.0, 0.0, -0.4, 0.05);
+			glPopMatrix();
+
+			//back right
+			glPushMatrix();
+			glColor3f(0.0, 0.5, 1.0);
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glBegin(GL_POLYGON);
+
+			glVertex3f(0.17, 0.0, 0.025);
+			glVertex3f(0.0, -0.4, 0.14);
+			glVertex3f(0.17, -0.75, 0.025);
+
+			glEnd();
+
+			glColor3f(0.0, 0.5, 1.0);
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glBegin(GL_POLYGON);
+
+			glVertex3f(0.17, 0.0, 0);
+			glVertex3f(0.0, -0.4, 0);
+			glVertex3f(0.17, -0.75, 0);
+
+			glEnd();
+
+			//back left
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glBegin(GL_POLYGON);
+
+			glVertex3f(-0.17, 0.0, 0.025);
+			glVertex3f(0.0, -0.4, 0.14);
+			glVertex3f(-0.17, -0.75, 0.025);
+
+			glEnd();
+
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glBegin(GL_POLYGON);
+
+			glVertex3f(-0.17, 0.0, 0);
+			glVertex3f(0.0, -0.4, 0);
+			glVertex3f(-0.17, -0.75, 0);
+
+			glEnd();
+
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glBegin(GL_POLYGON); //right fill
+			glVertex3f(0.17, 0.0, 0.025);
+			glVertex3f(0.17, 0.0, 0);
+			glVertex3f(0.17, -0.75, 0);
+			glVertex3f(0.17, -0.75, 0.025);
+			glEnd();
+
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glBegin(GL_POLYGON);
+			{
+				glVertex3f(0.17, 0.0, 0.025);
+				glVertex3f(0.17, 0.0, 0);
+				glVertex3f(0.0, -0.4, 0);
+				glVertex3f(0.0, -0.4, 0.14);
+			}
+			glEnd();
+
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glBegin(GL_POLYGON);
+			{
+				glVertex3f(0.17, -0.75, 0.025);
+				glVertex3f(0.17, -0.75, 0);
+				glVertex3f(0.0, -0.4, 0);
+				glVertex3f(0.0, -0.4, 0.14);
+			}
+			glEnd();
+
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glBegin(GL_POLYGON); //left fill
+			glVertex3f(-0.17, 0.0, 0.025);
+			glVertex3f(-0.17, 0.0, 0);
+			glVertex3f(-0.17, -0.75, 0);
+			glVertex3f(-0.17, -0.75, 0.025);
+			glEnd();
+
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glBegin(GL_POLYGON);
+			{
+				glVertex3f(-0.17, 0.0, 0.025);
+				glVertex3f(-0.17, 0.0, 0);
+				glVertex3f(0.0, -0.4, 0);
+				glVertex3f(0.0, -0.4, 0.14);
+			}
+			glEnd();
+
+			glPolygonMode(GL_FRONT, GL_LINE);
+			glBegin(GL_POLYGON);
+			{
+				glVertex3f(-0.17, -0.75, 0.025);
+				glVertex3f(-0.17, -0.75, 0);
+				glVertex3f(0.0, -0.4, 0);
+				glVertex3f(0.0, -0.4, 0.14);
+			}
+			glEnd();
+
+			glPopMatrix();
+			glPopMatrix();
+
+			glPopMatrix();
+
+			glPopMatrix();
+		}
+#pragma endregion
+
+#pragma region side armor
+	glPushMatrix();
+	glTranslatef(0.15, 0.525, 0.05);
+		glColor3f(1.0, 0.5, 0.0);
+		glLineWidth(3);
+		drawCube(0.075, 0.45, 0.15);
+		
+		glPushMatrix();
+			glTranslatef(0.0, -0.225, 0.0);
+			glRotatef(90, 0.0, 1.0, 0.0);
+			drawTrianglePrism(-0.075, 0.0, 0.075, 0.0, -0.075, -0.3, 0.075);
+		glPopMatrix();
+	glEnd();
+	glPopMatrix();
+
+	glPushMatrix();
+		glTranslatef(-0.15, 0.525, 0.05);
+		glColor3f(1.0, 0.5, 0.0);
+		glLineWidth(3);
+		drawCube(0.075, 0.45, 0.15);
+
+		glPushMatrix();
+			glTranslatef(0.0, -0.225, 0.0);
+			glRotatef(90, 0.0, 1.0, 0.0);
+			drawTrianglePrism(-0.075, 0.0, 0.075, 0.0, -0.075, -0.3, 0.075);
+		glPopMatrix();
+		glEnd();
+	glPopMatrix();
+#pragma endregion
+	glPushMatrix();
+	if (armRotate3 > 0) //only bend the knees forward
+	{
+		glRotatef(-armRotate3/2 , 1.0, 0.0, 0.0);
+	}
+
+
+	glColor3f(1, 1, 1);
+#pragma region Knee
+	glPushMatrix();
+	glLineWidth(1);
+	drawSphere(0.1f);
+	glPopMatrix();
+#pragma endregion
+
+#pragma region Shin
+	glPushMatrix();
+	glTranslatef(0.0f, -0.3f, 0.0f);
+	drawCube(0.25f, 0.5f, 0.25f);
+	glPopMatrix();
+#pragma endregion
+
+#pragma region ankle
+	glPushMatrix();
+	glTranslatef(0.0f, -0.6f, 0.0f);
+	drawCube(0.1f, 0.1f, 0.1f);
+	glPopMatrix();
+#pragma endregion
+
+#pragma region Foot
+	glPushMatrix(); 
+	glTranslatef(0.0f, -0.71f, -0.05f);
+	drawCube(0.25f, 0.15f, 0.4f);
+	glPopMatrix();
+#pragma endregion
+	glPopMatrix();
+	glPopMatrix();
+}
+void display()
+{
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
 	glLoadIdentity();
-	glRotatef(armRotate, 0.0, 0.0, 1.0);
-	glRotatef(armRotate2, 0.0, 1.0, 0.0);
-	glRotatef(armRotate3, 1.0, 0.0, 0.0);
-	drawCube(0.6f, 0.4f, 0.4f);
+	glPushMatrix();
+		glColor3f(1.0f, 0.0f, 0.0f); //X axis
+		drawCube(2.0f, 0.0f, 0.0f);
 
-}
-void display()
-{
+		glColor3f(0.0f, 0.0f, 1.0f); //y axis
+		drawCube(0.0f, 2.0f, 0.0f);
 
+		glColor3f(0.0f, 1.0f, 1.0f); //z axis
+		drawCube(0.0f, 0.0f, 2.0f);
+	glPopMatrix();
 	//arm();
+	
 	leg();
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------Void End 
@@ -781,7 +1185,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nCmdShow)
 	if (!RegisterClassEx(&wc)) return false;
 
 	HWND hWnd = CreateWindow(WINDOW_TITLE, WINDOW_TITLE, WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
+		CW_USEDEFAULT, CW_USEDEFAULT, 1000, 1000,
 		NULL, NULL, wc.hInstance, NULL);
 
 	//--------------------------------
