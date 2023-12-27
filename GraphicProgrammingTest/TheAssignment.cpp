@@ -213,6 +213,122 @@ void drawSphere(float r)
 	gluDeleteQuadric(sphere);				//destroy obj
 }
 
+void drawSidedTriangle(float Length, float Width, float thickness) // have centering function
+{
+	glPushMatrix();
+	glTranslatef(0.0, -Width / 2, 0);
+	//front face
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(-Length / 2, 0.0, -thickness / 2);
+	glVertex3f(Length / 2, 0.0, -thickness / 2);
+	glVertex3f(0.0, Width, -thickness / 2);
+
+	glEnd();
+
+	//back face
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(-Length/2 , 0.0, thickness / 2);
+	glVertex3f(Length/2 , 0.0, thickness / 2);
+	glVertex3f(0.0, Width, thickness / 2);
+
+	glEnd();
+
+	//filling
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(-Length / 2, 0.0, -thickness / 2);
+	glVertex3f(-Length / 2, 0.0, thickness / 2);
+	glVertex3f(Length / 2, 0.0, thickness / 2);
+	glVertex3f(Length / 2, 0.0, -thickness / 2);
+
+	glEnd();
+
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(Length / 2, 0.0, -thickness / 2);
+	glVertex3f(Length / 2, 0.0, thickness / 2);
+	glVertex3f(0.0 , Width, thickness / 2);
+	glVertex3f(0.0 , Width, -thickness / 2);
+
+	glEnd();
+
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(0.0, Width, -thickness / 2);
+	glVertex3f(0.0, Width, thickness / 2);
+	glVertex3f(-Length / 2, 0.0, thickness / 2);
+	glVertex3f(-Length / 2, 0.0, -thickness / 2);
+
+	glEnd();
+
+	glPopMatrix();
+}
+
+void drawRightTriangle(float OnX, float OnY, float thickness) //1st point is on the origin, have centering function
+{
+	glPushMatrix();
+	glTranslatef(-OnX / 2, -OnY / 2, 0);
+	//front face
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(0.0, 0.0, -thickness/2);
+	glVertex3f(OnX, 0.0, -thickness / 2);
+	glVertex3f(0.0, OnY, -thickness / 2);
+
+	glEnd();
+
+	//back face
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(0.0, 0.0, thickness / 2);
+	glVertex3f(OnX, 0.0, thickness / 2);
+	glVertex3f(0.0, OnY, thickness / 2);
+
+	glEnd();
+
+	//filling
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(0.0, 0.0, -thickness / 2);
+	glVertex3f(0.0, 0.0, thickness / 2);
+	glVertex3f(OnX, 0.0, thickness / 2);
+	glVertex3f(OnX, 0.0, -thickness / 2);
+
+	glEnd();
+
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(OnX, 0.0, -thickness / 2);
+	glVertex3f(OnX, 0.0, thickness / 2);
+	glVertex3f(0.0, OnY, thickness / 2);
+	glVertex3f(0.0, OnY, -thickness / 2);
+
+	glEnd();
+
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glBegin(GL_POLYGON);
+
+	glVertex3f(0.0, OnY, -thickness / 2);
+	glVertex3f(0.0, OnY, thickness / 2);
+	glVertex3f(0.0, 0.0, thickness / 2);
+	glVertex3f(0.0, 0.0, -thickness / 2);
+
+	glEnd();
+
+	glPopMatrix();
+}
+
 void drawTrianglePrism(float P1x, float P1y, float P2x, float P2y, float P3x, float P3y, float Thickness) //Drawing on the center of the z, this can get derailled very quickly
 {
 	glPushMatrix();
@@ -811,15 +927,17 @@ void leg()
 	glRotatef(armRotate3, 1.0, 0.0, 0.0);
 
 	//drawTrianglePrism(0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.1f);
+	//drawRightTriangle(0.3f, -0.6f, 0.1f);
+	//drawSidedTriangle(0.2, 0.5, 0.1);
 
 	//glScalef(0.5, 0.5, 0.5);
-	//glTranslatef(0, -0.75f, 0);
+	//glTranslatef(0, -0.75f, 0); //original transformation
 
 	glTranslatef(0, -0.4f, 0.0f); //focusing on that thicc thigh
 	glColor3f(1, 1, 1);
 #pragma region Thigh
 	glPushMatrix(); 
-	
+
 	glTranslatef(0, 0.4f, 0);
 	drawCube(0.2f, 0.7f, 0.2f);
 	
@@ -967,6 +1085,8 @@ void leg()
 		glEnd();
 #pragma endregion
 
+		
+
 #pragma region Thigh Back armor
 		{
 			glPushMatrix();
@@ -1111,6 +1231,7 @@ void leg()
 		glEnd();
 	glPopMatrix();
 #pragma endregion
+	//ps: this took me more than 12 hours to figure things out
 	glPushMatrix();
 	if (armRotate3 > 0) //only bend the knees forward
 	{
