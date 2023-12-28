@@ -1071,18 +1071,10 @@ void arm()
 
 void leg(float AnimationControl)
 {
-	//glLoadIdentity();
-
 	glPushMatrix();
-	/*glRotatef(armRotate, 0.0, 0.0, 1.0);
-	glRotatef(armRotate2, 0.0, 1.0, 0.0);*/
+
 	glRotatef(AnimationControl, 1.0, 0.0, 0.0);
-
-	//drawTrianglePrism(0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.1f);
-	//drawRightTriangle(0.3f, -0.6f, 0.1f);
-	//drawSidedTriangle(0.2, 0.5, 0.1);
-	//drawIrregularCube(0.2, 0.5, 1.0);
-
+ 
 	glScalef(0.5, 0.5, 0.5);
 	glTranslatef(0, -0.825f, 0); //original transformation
 
@@ -1090,8 +1082,9 @@ void leg(float AnimationControl)
 	//glTranslatef(0, 0.3f, 0.0f); // focusing on those slender shin
 	//dear viewers, pls do not look at me with weird eyes, i swear im just joking... hehe
 	glPushMatrix();
-	glTranslatef(0.0, 0.825, 0.0);
-	drawIrregularCube(0.15, 0.2, 0.15);
+	glTranslatef(0.0, 0.85, 0.0);
+	glScalef(-1.5, 1.0, 0.75);
+	drawIrregularCube(0.15, 0.20, 0.2);
 	glPopMatrix();
 
 	glColor3f(1, 1, 1);
@@ -1501,6 +1494,89 @@ void leg(float AnimationControl)
 	glPopMatrix();
 	glPopMatrix();
 }
+
+void RightSidedWaist() //to be reflected to the other side
+{
+	glPushMatrix();
+
+	//front
+	glColor3f(0.0, 1.0, 0.5);
+	glBegin(GL_QUADS);
+
+	glVertex3f(0.0f, 0.05, -0.05);
+	glVertex3f(0.15f, 0.05, -0.05);
+	glVertex3f(0.2f, 0.0, -0.075);
+	glVertex3f(0.0f, 0.0f, -0.075);
+
+	glEnd();
+
+	//top
+	glColor3f(0.0, 1.0, 0.5);
+	glBegin(GL_QUADS);
+
+	glVertex3f(0.0f, 0.05, -0.05);
+	glVertex3f(0.0f, 0.05, 0.05);
+	glVertex3f(0.15f, 0.05, 0.05);
+	glVertex3f(0.15f, 0.05, -0.05);
+
+	glEnd();
+
+	//back
+	glColor3f(0.0, 1.0, 0.5);
+	glBegin(GL_QUADS);
+
+	glVertex3f(0.15f, 0.05, 0.05);
+	glVertex3f(0.0f, 0.05, 0.05);
+	glVertex3f(0.0f, 0.0f, 0.075);
+	glVertex3f(0.2f, 0.0, 0.075);
+
+	glEnd();
+
+	//side
+	glColor3f(0.0, 1.0, 0.5);
+	glBegin(GL_QUADS);
+
+	glVertex3f(0.15f, 0.05, -0.05);
+	glVertex3f(0.15f, 0.05, 0.05);
+	glVertex3f(0.2f, 0.0, 0.075);
+	glVertex3f(0.2f, 0.0, -0.075);
+
+	glEnd();
+
+	glPushMatrix();
+	glTranslatef(0.025, -0.075, 0.0);
+	glColor3f(0.0, 1.0, 0.5);
+	drawCube(0.05, 0.15, 0.15);
+
+	glPopMatrix();
+
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0.1f, -0.075f, 0.0f);
+	glColor3f(0.0, 1.0, 0.5);
+	glScalef(1.0, 1.0, 1.5);
+	glRotatef(180, 1.0, 0.0, 0.0); //flip it upside down
+	drawRightTriangle(0.2, 0.15, 0.1);
+
+	glPopMatrix();
+}
+
+void Waist()
+{
+	glPushMatrix();
+
+	RightSidedWaist();
+
+	glPopMatrix();
+
+	glPushMatrix();
+	glScalef(-1.0f, 1.0, 1.0);
+	RightSidedWaist();
+
+	glPopMatrix();
+}
+
 void display()
 {
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -1523,15 +1599,28 @@ void display()
 	
 	glRotatef(armRotate, 0.0, 0.0, 1.0);
 	glRotatef(armRotate2, 0.0, 1.0, 0.0);
+	glRotatef(armRotate3, 1.0, 0.0, 0.0);
+
+	//Put waist here
+	glPushMatrix();
+	Waist();
+	glPopMatrix();
+	
+#pragma region Completed_Legs	
+	glPushMatrix();
+	glTranslatef(0.0, -0.1, 0.0);
 		glPushMatrix();
-		glTranslatef(-0.2f, 0.0f, 0.0f);
-		leg(armRotate3); // left leg
+		glTranslatef(-0.15f, 0.0f, 0.0f);
+		glColor3f(1.0, 1.0, 1.0);
+		leg(0.0); // left leg
 		glPopMatrix();
 
 		glPushMatrix();
-		glTranslatef(0.2f, 0.0f, 0.0f);
-		leg(-armRotate3); // left leg
+		glTranslatef(0.15f, 0.0f, 0.0f);
+		leg(0.0); // right leg
 		glPopMatrix();
+	glPopMatrix();
+#pragma endregion 
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------Void End 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nCmdShow)
