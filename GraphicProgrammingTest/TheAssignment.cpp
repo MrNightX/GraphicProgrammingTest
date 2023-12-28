@@ -1543,13 +1543,27 @@ void RightSidedWaist() //to be reflected to the other side
 
 	glEnd();
 
-	glPushMatrix();
+	glPushMatrix(); //the middle D
+
 	glTranslatef(0.025, -0.075, 0.0);
 	glColor3f(0.0, 1.0, 0.5);
 	drawCube(0.05, 0.15, 0.15);
 
-	glPopMatrix();
+		glPushMatrix(); //the outer D
 
+		glTranslatef(-0.025, 0.025, -0.075);
+		glColor3f(0.0, 1.0, 0.5);
+		drawCube(0.075, 0.15, 0.05);
+
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(0.1, 0.05, 0.05);
+		glRotatef(90, 0.0, 0.0, 1.0);
+		drawIrregularCube(0.1, 0.05, 0.10);
+		glPopMatrix();
+
+		glPopMatrix();
 	glPopMatrix();
 
 	glPushMatrix();
@@ -1612,11 +1626,23 @@ void display()
 		glPushMatrix();
 		glTranslatef(-0.15f, 0.0f, 0.0f);
 		glColor3f(1.0, 1.0, 1.0);
+			//draw the joint
+			glPushMatrix();
+			glTranslatef(0.02f, 0.05f, 0.0f);
+			drawSphere(0.05f);
+			glPopMatrix();
+		
 		leg(0.0); // left leg
 		glPopMatrix();
 
 		glPushMatrix();
 		glTranslatef(0.15f, 0.0f, 0.0f);
+		glColor3f(1.0, 1.0, 1.0);
+			//draw the joint
+			glPushMatrix();
+			glTranslatef(-0.02f, 0.05f, 0.0f);
+			drawSphere(0.05f);
+			glPopMatrix();
 		leg(0.0); // right leg
 		glPopMatrix();
 	glPopMatrix();
