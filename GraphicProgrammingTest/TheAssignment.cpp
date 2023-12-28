@@ -1,14 +1,9 @@
 #include <Windows.h>
-#include <Windowsx.h>
 #include <gl/GL.h>
-#include <math.h>
 #include <gl/GLU.h>
-#include <iostream>
-#pragma comment (lib, "OpenGL32.lib")
+#include <math.h>
 
-#define WINDOW_TITLE "Robot"                  // Can change the window name
-int qNo = 1;
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- alphabet declaring n checking
+#define WINDOW_TITLE "Practical 4"
 #pragma region define
 // VK_A - VK_Z are the same as ASCII 'A' - 'Z' (0x41 - 0x5A)
 #define VK_A 0x41
@@ -53,112 +48,133 @@ int qNo = 1;
 #pragma endregion
 #pragma region void
 
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- Declare Start
-float bodyAngle = 0.0f;
-void wKeyAction();
-void aKeyAction();
-void sKeyAction();
-void dKeyAction();
-
 bool viewPrac = false;
-//int qNo = 1;
+int qNo = 1;
+
 int rX = 0, rY = 0, rZ = 0;
 float rSpeed = 0.5;
+
 float armRotate = 0;
 float armRotate2 = 0;
 float armRotate3 = 0;
 const float ROTATION_INCREMENT = 5.0f;
+#pragma region Camera Movement
+float pRX = 0.0, pRY = 0.0;
+float pRSpeed = 4.0;
+//	Translation
+//float pTZ = -10.0;
+float bPRX = 0.0;
+float bPRY = 0.5;
+float bPRZ = -4.0;
+float pTX = bPRX;
+float pTY = bPRY;
+float pTZ = bPRZ;
+float maxPTX = 3.0;
+float minPTX = -3.0;
+float maxPTY = 3.0;
+float minPTY = -3.0;
+float maxPTZ = -2.0;
+float minPTZ = -20;
+float pTSpeed = 0.2;
 
-//what
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------switch case placing
-LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (msg)
-	{
+bool CameraMovement = true;
+
+void resetCamera() {
+	pRX = pRY = 0.0;
+	pTX = bPRX;
+	pTY = bPRY;
+	pTZ = bPRZ;
+}
+#pragma endregion	
+
+
+LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	switch (msg) {
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
 
 	case WM_KEYDOWN:
-		if (wParam == VK_ESCAPE) PostQuitMessage(0);
-		if (wParam == VK_F1) qNo++;
-		if (wParam == VK_F2) viewPrac = !viewPrac;
+		if (wParam == VK_ESCAPE) {
+			if (CameraMovement) {
+				PostQuitMessage(0);
+			}
+			else {
+				// Reset arm rotations if not in camera movement mode
+				armRotate = armRotate2 = armRotate3 = 0;
+			}
+		}
+		else if (CameraMovement) {
+			// Handle camera movement
+			switch (wParam) {
+			case VK_UP: pRX -= pRSpeed; break;
+			case VK_DOWN: pRX += pRSpeed; break;
+			case VK_LEFT: pRY -= pRSpeed; break;
+			case VK_RIGHT: pRY += pRSpeed; break;
+			case VK_NUMPAD4: if (pTX < maxPTX) pTX += pTSpeed; break;
+			case VK_NUMPAD6: if (pTX > minPTX) pTX -= pTSpeed; break;
+			case VK_NUMPAD2: if (pTY < maxPTY) pTY += pTSpeed; break;
+			case VK_NUMPAD8: if (pTY > minPTY) pTY -= pTSpeed; break;
+			case 'W': if (pTZ < maxPTZ) pTZ += pTSpeed; break;
+			case 'S': if (pTZ > minPTZ) pTZ -= pTSpeed; break;
+			case VK_SPACE: resetCamera(); break;
+			default: break;
+			}
+		}
+		else {
+			// Handle arm movements
+			switch (wParam) {
+			case VK_UP:
+				if (armRotate < 45) armRotate += ROTATION_INCREMENT;
+				break;
+			case VK_DOWN:
+				if (armRotate > 0) armRotate -= ROTATION_INCREMENT;
+				if (armRotate < 0) armRotate = 0;
+				break;
+			case VK_LEFT:
+				if (armRotate3 > -90) armRotate3 -= ROTATION_INCREMENT;
+				if (armRotate3 < -90) armRotate3 = -90;
+				break;
+			case VK_RIGHT:
+				if (armRotate3 < 90) armRotate3 += ROTATION_INCREMENT;
+				if (armRotate3 > 90) armRotate3 = 90;
+				break;
+			case VK_NUMPAD6:
+				if (armRotate3 < 90) armRotate3 += ROTATION_INCREMENT;
+				if (armRotate3 > 90) armRotate3 = 90;
+				break;
+			case VK_NUMPAD4:
+				if (armRotate3 > -90) armRotate3 -= ROTATION_INCREMENT;
+				if (armRotate3 < -90) armRotate3 = -90;
+				break;
+			case VK_NUMPAD2:
+				if (armRotate2 < 90) armRotate2 += ROTATION_INCREMENT;
+				if (armRotate2 > 90) armRotate2 = 90;
+				break;
+			case VK_NUMPAD8:
+				if (armRotate2 > -90) armRotate2 -= ROTATION_INCREMENT;
+				if (armRotate2 < -90) armRotate2 = -90;
+				break;
+			case VK_SPACE:
+				armRotate = armRotate2 = armRotate3 = 0;
+				break;
+			default:
+				break;
+			}
+		}
 
-		if (wParam == 0x58) rX = abs(rX - 1);
-		if (wParam == 0x59) rY = abs(rY - 1);
-		if (wParam == 0x5A) rZ = abs(rZ - 1);
-
-		//switch case for arms movement
-
-		switch (wParam) {
-		case VK_UP:
-			if (armRotate < 45)  // Limiting the maximum rotation to 45 degrees
-				armRotate += ROTATION_INCREMENT;
-			break;
-		case VK_DOWN:
-			if (armRotate > 0) // Limiting the minimum rotation to 0 degrees
-				armRotate -= ROTATION_INCREMENT;
-			if (armRotate < 0) // Ensure the rotation doesn't go below 0 degrees
-				armRotate = 0;
-			break;
-		case VK_LEFT:
-			if (armRotate3 > -90) // Limiting the minimum rotation to -90 degrees
-				armRotate3 -= ROTATION_INCREMENT;
-			if (armRotate3 < -90) // Ensure the rotation doesn't go below -90 degrees
-				armRotate3 = -90;
-			break;
-
-		case VK_RIGHT:
-			if (armRotate3 < 90) // Limiting the maximum rotation to 90 degrees
-				armRotate3 += ROTATION_INCREMENT;
-			if (armRotate3 > 90) // Ensure the rotation doesn't exceed 90 degrees
-				armRotate3 = 90;
-			break;
-
-		case VK_NUMPAD6:
-			if (armRotate3 < 90) // Limiting the maximum rotation to 90 degrees
-				armRotate3 += ROTATION_INCREMENT;
-			if (armRotate3 > 90) // Ensure the rotation doesn't exceed 90 degrees
-				armRotate3 = 90;
-			break;
-
-		case VK_NUMPAD4:
-			if (armRotate3 > -90) // Limiting the minimum rotation to -90 degrees
-				armRotate3 -= ROTATION_INCREMENT;
-			if (armRotate3 < -90) // Ensure the rotation doesn't go below -90 degrees
-				armRotate3 = -90;
-			break;
-
-		case VK_NUMPAD2: // Rotate right around the Y-axis
-			if (armRotate2 < 90) // Limiting the maximum rotation to 90 degrees
-				armRotate2 += ROTATION_INCREMENT;
-			if (armRotate2 > 90) // Ensure the rotation doesn't exceed 90 degrees
-				armRotate2 = 90;
-			break;
-
-		case VK_NUMPAD8: // Rotate left around the Y-axis
-			if (armRotate2 > -90) // Limiting the minimum rotation to -90 degrees
-				armRotate2 -= ROTATION_INCREMENT;
-			if (armRotate2 < -90) // Ensure the rotation doesn't go below -90 degrees
-				armRotate2 = -90;
-			break;
-
-		case VK_SPACE:
-			armRotate = armRotate2 = armRotate3 = 0;
-			break;
-
-		default:
-			break;
+		if (wParam == 'P') {
+			CameraMovement = !CameraMovement;
 		}
 		break;
 
 	default:
-		break;
+		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
 
-	return DefWindowProc(hWnd, msg, wParam, lParam);
+	return 0;
 }
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------nothing to change here
+//--------------------------------------------------------------------
 
 bool initPixelFormat(HDC hdc)
 {
@@ -190,73 +206,26 @@ bool initPixelFormat(HDC hdc)
 		return false;
 	}
 }
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------Void Start
-void wKeyAction() {
-	bodyAngle = 0.0f;
-}
-void aKeyAction() {
-	bodyAngle = 90.0f;
-}
-void sKeyAction() {
-	bodyAngle = 180.0f;
-}
-void dKeyAction() {
-	bodyAngle = 270.0f;
-}
-void drawSphere(float r)
-{
-	//glRotatef(0.01, 1.0, 1.0, 1.0);
-	GLUquadricObj* sphere = NULL;			//declare quadric obj pointer
-	sphere = gluNewQuadric();				//create quadric obj
-	gluQuadricDrawStyle(sphere, GLU_FILL);	//draw using line
-	gluSphere(sphere, r, 30, 30);         //draw sphere
-	gluDeleteQuadric(sphere);				//destroy obj
+//--------------------------------------------------------------------
+void projection() {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	//glFrustum(-8.0, 8.0, -8.0, 8.0, 1.0, 10.0);
+	gluPerspective(60, 1.0, 0.6, 100.0);
+	glTranslatef(pTX, pTY, pTZ);
+	glRotatef(pRX, 1.0, 0.0, 0.0);
+	glRotatef(pRY, 0.0, 1.0, 0.0);
 }
 
-void drawCube(float x, float y, float z) // keep in mind that the cube always draw from the origin, but the z is pointing away from ... you
-{
-	//float P_X = x/2, P_Y = y/2 , P_Z = z/2;
-	glLineWidth(1);
-	glColor3f(1, 1, 1); 
 
-	glBegin(GL_LINE_LOOP);
-		glVertex3f(0, 0, 0);
-		glVertex3f(x, 0, 0);
-		glVertex3f(x, y, 0);
-		glVertex3f(0, y, 0);
-	glEnd();
-
-	glBegin(GL_LINE_LOOP);
-		glVertex3f(0, y, 0);
-		glVertex3f(x, y, 0);
-		glVertex3f(x, y, -z);
-		glVertex3f(0, y, -z);
-	glEnd();
-
-	glBegin(GL_LINE_LOOP);
-		glVertex3f(0, y, -z);
-		glVertex3f(x, y, -z);
-		glVertex3f(x, 0, -z);
-		glVertex3f(0, 0, -z);
-	glEnd();
-
-	glBegin(GL_LINE_LOOP);
-		glVertex3f(0, 0, -z);
-		glVertex3f(0, 0, 0);
-		glVertex3f(x, 0, 0);
-		glVertex3f(x, 0, -z);
-	glEnd();
-}
-void arm() {
-	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
+void LeftHand() {
 
 	glLoadIdentity();
-	//glRotatef(-90, 0.0, 0.0, 1.0);     //rotate 90 degrees so taht arm is down
-	glTranslatef(-0.5, 0.0, 0.0);
 	glPushMatrix();
-	glRotatef(armRotate2, 0.0, 1.0, 0.0);
+	glRotatef(-90, 0.0, 0.0, 1.0);     //rotate 90 degrees so taht arm is down
+	glTranslatef(-0.5, -0.8, 0.0);
+	glPushMatrix();
+	glRotatef(armRotate2, 0.0, 0.0, 1.0);
 	glRotatef(armRotate3, 1.0, 0.0, 0.0);
 #pragma region shoulder
 	//----shoulder----//
@@ -430,11 +399,12 @@ void arm() {
 #pragma region Hand Thumb
 	//----HandThumbBase----//
 	glPushMatrix();
-	glScalef(1.1f, 1.1f, 1.1f);
 	glTranslatef(0.0, -0.09, 0.0);
 	glRotatef(10, 0.0, 0.0, 1.0);
 	glColor3f(0.5, 0.5, 1);
-	glTranslatef(0.1, 0.2, 0.0);
+	glTranslatef(0.1, 0.21, 0.0);
+
+	//glScalef(0.9f, 0.9f, 0.9f);
 	// Face 1
 	glBegin(GL_QUADS);
 	glVertex3f(0.0f, 0.0f, 0.05f);
@@ -483,7 +453,7 @@ void arm() {
 	//----HandThumbMIddle----//
 	glPushMatrix();
 	glScalef(0.9f, 0.9f, 0.9f);
-	glTranslatef(0.04, 0, 0.0);
+	glTranslatef(0.035, -0.01, 0.005);
 	glRotatef(-10, 0.0, 0.0, 1.0);
 	glColor3f(0.5, 0.5, 1);
 	glTranslatef(0.1, 0.2, 0.0);
@@ -534,7 +504,7 @@ void arm() {
 	//----HandThumbTop----// pyramid
 	glPushMatrix();
 	glColor3f(0.5, 0.5, 1);
-	glTranslatef(0.249, 0.168, 0.028);
+	glTranslatef(0.249, 0.16, 0.026);
 	glRotatef(-11, 0.0, 0.0, 1.0);
 	glRotatef(90, 0.0, 1.0, 0.0);
 	GLUquadricObj* cylinder = NULL;	//declare quadric obj pointer
@@ -542,7 +512,7 @@ void arm() {
 
 	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cone
 
-	gluCylinder(cylinder, 0.025, 0.0, 0.03, 30, 30);	//draw cone
+	gluCylinder(cylinder, 0.025, 0.0, 0.027, 30, 30);	//draw cone
 	gluDeleteQuadric(cylinder);	//destroy the cone
 
 	glPopMatrix();
@@ -559,7 +529,6 @@ void arm() {
 	glVertex3f(0.1f, 0.0f, 0.05f);
 	glVertex3f(0.1f, 0.0f, 0.0f);
 	glVertex3f(0.0f, 0.0f, 0.0f);
-
 	glEnd();
 	// Face 2 …
 	glBegin(GL_QUADS);
@@ -596,6 +565,68 @@ void arm() {
 	glVertex3f(0.1f, 0.0f, 0.0f);
 	glVertex3f(0.1f, 0.05f, 0.0f);
 	glEnd();
+	//----HandPointerMiddle----//
+	glColor3f(1, 0, 1);
+	glPushMatrix();
+
+	glTranslatef(0.1, 0, 0.0);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	glPopMatrix();
+	//----HandThumbTop----// pyramid
+	glPushMatrix();
+	glColor3f(0.5, 0.5, 1);
+	glTranslatef(0.2, 0.017, 0.026);
+	glRotatef(-11, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	cylinder = gluNewQuadric();		//create quadric obj in the memory
+
+	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cone
+
+	gluCylinder(cylinder, 0.025, 0.0, 0.027, 30, 30);	//draw cone
+	gluDeleteQuadric(cylinder);	//destroy the cone
+
+	glPopMatrix();
 #pragma endregion
 #pragma region Hand Middle Finger
 	//----HandMiddleFinger----//
@@ -644,6 +675,68 @@ void arm() {
 	glVertex3f(0.1f, 0.0f, 0.0f);
 	glVertex3f(0.1f, 0.05f, 0.0f);
 	glEnd();
+	//----HandMiddleMiddle----//
+	glColor3f(0, 1, 1);
+	glPushMatrix();
+
+	glTranslatef(0.1, 0, 0.0);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	glPopMatrix();
+	//----HandMiddleTop----// pyramid
+	glPushMatrix();
+	glColor3f(0.5, 0.5, 1);
+	glTranslatef(0.2, 0.017, 0.026);
+	glRotatef(-11, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	cylinder = gluNewQuadric();		//create quadric obj in the memory
+
+	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cone
+
+	gluCylinder(cylinder, 0.025, 0.0, 0.027, 30, 30);	//draw cone
+	gluDeleteQuadric(cylinder);	//destroy the cone
+
+	glPopMatrix();
 #pragma endregion
 #pragma region Hand Ring Finger
 	//----HandRingFinger----//
@@ -692,6 +785,68 @@ void arm() {
 	glVertex3f(0.1f, 0.0f, 0.0f);
 	glVertex3f(0.1f, 0.05f, 0.0f);
 	glEnd();
+	//----HandPointerMiddle----//
+	glColor3f(1, 0, 1);
+	glPushMatrix();
+
+	glTranslatef(0.1, 0, 0.0);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	glPopMatrix();
+	//----HandThumbTop----// pyramid
+	glPushMatrix();
+	glColor3f(0.5, 0.5, 1);
+	glTranslatef(0.2, 0.017, 0.026);
+	glRotatef(-11, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	cylinder = gluNewQuadric();		//create quadric obj in the memory
+
+	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cone
+
+	gluCylinder(cylinder, 0.025, 0.0, 0.027, 30, 30);	//draw cone
+	gluDeleteQuadric(cylinder);	//destroy the cone
+
+	glPopMatrix();
 #pragma endregion
 #pragma region Hand Pinky
 	//----HandPinky----//
@@ -740,33 +895,837 @@ void arm() {
 	glVertex3f(0.1f, 0.0f, 0.0f);
 	glVertex3f(0.1f, 0.05f, 0.0f);
 	glEnd();
+	//----HandPinklyMiddle----//
+	glColor3f(0, 1, 1);
+	glPushMatrix();
+
+	glTranslatef(0.1, 0, 0.0);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	glPopMatrix();
+	//----HandPinkyTop----// pyramid
+	glPushMatrix();
+	glColor3f(0.5, 0.5, 1);
+	glTranslatef(0.2, 0.017, 0.026);
+	glRotatef(-11, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	cylinder = gluNewQuadric();		//create quadric obj in the memory
+	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cone
+	gluCylinder(cylinder, 0.025, 0.0, 0.027, 30, 30);	//draw cone
+	gluDeleteQuadric(cylinder);	//destroy the cone
+
+	glPopMatrix();
 #pragma endregion
 	glPopMatrix();
 	glPopMatrix();
 	glPopMatrix();
-
+	glPopMatrix();
 }
-
-void leg()
-{
+void RightHand() {
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
+
 
 	glLoadIdentity();
-	glRotatef(armRotate, 0.0, 0.0, 1.0);
-	glRotatef(armRotate2, 0.0, 1.0, 0.0);
-	glRotatef(armRotate3, 1.0, 0.0, 0.0);
-	drawCube(0.6f, 0.4f, 0.4f);
+	glPushMatrix();
+	glRotatef(-90, 0.0, 0.0, 1.0);     //rotate 90 degrees so taht arm is down
+	glTranslatef(-0.5, 0.7, 0.0);
+	glPushMatrix();
+	glRotatef(-armRotate2, 0.0, 0.0, 1.0);
+	glRotatef(-armRotate3, 1.0, 0.0, 0.0);
+#pragma region shoulder
+	//----shoulder----//
+	glColor3f(1, 0, 0);
+	glBegin(GL_QUADS);
+	// Face 1
+	glVertex3f(0.0f, 0.0f, 0.2f);
+	glVertex3f(0.5f, 0.0f, 0.2f);
+	glVertex3f(0.5f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
 
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.2f);
+	glVertex3f(0.5f, 0.0f, 0.2f);
+	glVertex3f(0.5f, -0.2f, 0.2f);
+	glVertex3f(0.0f, -0.2f, 0.2f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, -0.2f, 0.2f);
+	glVertex3f(0.5f, -0.2f, 0.2f);
+	glVertex3f(0.5f, -0.2f, 0.0f);
+	glVertex3f(0.0f, -0.2f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, -0.2f, 0.0f);
+	glVertex3f(0.5f, -0.2f, 0.0f);
+	glVertex3f(0.5f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.2f);
+	glVertex3f(0.0f, -0.2f, 0.2f);
+	glVertex3f(0.0f, -0.2f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.5f, -0.2f, 0.2f);
+	glVertex3f(0.5f, 0.0f, 0.2f);
+	glVertex3f(0.5f, 0.0f, 0.0f);
+	glVertex3f(0.5f, -0.2f, 0.0f);
+	glEnd();
+
+	//middle hand elbow
+	glPushMatrix();
+	glColor3f(0, 1, 0);
+	glTranslatef(0.52, -0.1, 0.1);
+	GLUquadricObj* sphere = NULL;			//declare quadric obj pointer
+	sphere = gluNewQuadric();				//create quadric obj
+	gluQuadricDrawStyle(sphere, GLU_FILL);	//draw using line
+	gluSphere(sphere, 0.1, 30, 30);         //draw sphere
+	gluDeleteQuadric(sphere);				//destroy obj
+	//-------------------------------------------------------------------------------
+	glPopMatrix();
+#pragma endregion
+#pragma region foreArm
+	//----fore arm----//
+	glPushMatrix();
+	glTranslatef(0.55, 0.0, 0.0);
+	glRotatef(-armRotate, 0.0, 0.0, 0.1);
+	glColor3f(0, 0, 1);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.2f);
+	glVertex3f(0.5f, 0.0f, 0.2f);
+	glVertex3f(0.5f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.2f);
+	glVertex3f(0.5f, 0.0f, 0.2f);
+	glVertex3f(0.5f, -0.2f, 0.2f);
+	glVertex3f(0.0f, -0.2f, 0.2f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, -0.2f, 0.2f);
+	glVertex3f(0.5f, -0.2f, 0.2f);
+	glVertex3f(0.5f, -0.2f, 0.0f);
+	glVertex3f(0.0f, -0.2f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, -0.2f, 0.0f);
+	glVertex3f(0.5f, -0.2f, 0.0f);
+	glVertex3f(0.5f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.2f);
+	glVertex3f(0.0f, -0.2f, 0.2f);
+	glVertex3f(0.0f, -0.2f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.5f, -0.2f, 0.2f);
+	glVertex3f(0.5f, 0.0f, 0.2f);
+	glVertex3f(0.5f, 0.0f, 0.0f);
+	glVertex3f(0.5f, -0.2f, 0.0f);
+	glEnd();
+
+	//----wrist ball----//
+	glPushMatrix();
+	glColor3f(0, 1, 0);
+	glTranslatef(0.5, -0.1, 0.1);
+	sphere = gluNewQuadric();				//create quadric obj
+	gluQuadricDrawStyle(sphere, GLU_FILL);	//draw using line
+	gluSphere(sphere, 0.09, 30, 30);         //draw sphere
+	gluDeleteQuadric(sphere);				//destroy obj
+	//-------------------------------------------------------------------------------
+	glPopMatrix();
+#pragma endregion
+#pragma region hand palm
+	//----handPalm----//
+	glColor3f(1, 1, 0);
+	glTranslatef(0.52, 0, 0.0);
+	glBegin(GL_QUADS);
+	// Face 1
+	glVertex3f(0.0f, 0.0f, 0.2f);
+	glVertex3f(0.1f, 0.0f, 0.2f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.2f);
+	glVertex3f(0.1f, 0.0f, 0.2f);
+	glVertex3f(0.1f, -0.2f, 0.2f);
+	glVertex3f(0.0f, -0.2f, 0.2f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, -0.2f, 0.2f);
+	glVertex3f(0.1f, -0.2f, 0.2f);
+	glVertex3f(0.1f, -0.2f, 0.0f);
+	glVertex3f(0.0f, -0.2f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, -0.2f, 0.0f);
+	glVertex3f(0.1f, -0.2f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.2f);
+	glVertex3f(0.0f, -0.2f, 0.2f);
+	glVertex3f(0.0f, -0.2f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, -0.2f, 0.2f);
+	glVertex3f(0.1f, 0.0f, 0.2f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, -0.2f, 0.0f);
+	glEnd();
+#pragma endregion
+#pragma region Hand Thumb
+	//----HandThumbBase----//
+	glPushMatrix();
+	glScalef(1.1f, 1.1f, 1.1f);
+	glTranslatef(0.0, -0.09, 0.0);
+	glRotatef(-10, 0.0, 0.0, 1.0);
+	glColor3f(0.5, 0.5, 1);
+	glTranslatef(0.08, -0.07, 0.0);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	glPopMatrix();
+
+	//----HandThumbMIddle----//
+	glPushMatrix();
+	glScalef(0.9f, 0.9f, 0.9f);
+	glRotatef(10, 0.0, 0.0, 1.0);
+	glColor3f(0.5, 0.5, 1);
+	glTranslatef(0.15, -0.255, 0.005);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	glPopMatrix();
+	//----HandThumbTop----// Cone
+	glPushMatrix();
+	glColor3f(0.5, 0.5, 1);
+	glTranslatef(0.252, -0.1655, 0.026);
+	glRotatef(11, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	GLUquadricObj* cylinder = NULL;	//declare quadric obj pointer
+	cylinder = gluNewQuadric();		//create quadric obj in the memory
+
+	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cone
+
+	gluCylinder(cylinder, 0.025, 0.0, 0.027, 30, 30);	//draw cone
+	gluDeleteQuadric(cylinder);	//destroy the cone
+
+	glPopMatrix();
+#pragma endregion
+	glPushMatrix();
+	glTranslatef(-0.02, -0.07, 0.0);
+	glRotatef(10, 0.0, 0.0, 1.0);
+#pragma region Hand Pointer
+	//----HandPointer----//
+	glColor3f(1, 0, 1);
+	glTranslatef(0.1, 0, 0.0);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	//----HandPointerMiddle----//
+	glColor3f(1, 0, 1);
+	glPushMatrix();
+
+	glTranslatef(0.1, 0, 0.0);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	glPopMatrix();
+	//----HandThumbTop----// pyramid
+	glPushMatrix();
+	glColor3f(0.5, 0.5, 1);
+	glTranslatef(0.2, 0.017, 0.026);
+	glRotatef(-11, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	cylinder = gluNewQuadric();		//create quadric obj in the memory
+
+	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cone
+
+	gluCylinder(cylinder, 0.025, 0.0, 0.027, 30, 30);	//draw cone
+	gluDeleteQuadric(cylinder);	//destroy the cone
+
+	glPopMatrix();
+#pragma endregion
+#pragma region Hand Middle Finger
+	//----HandMiddleFinger----//
+	glColor3f(0, 1, 1);
+	glTranslatef(0, 0, 0.05);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	//----HandMiddleMiddle----//
+	glColor3f(0, 1, 1);
+	glPushMatrix();
+
+	glTranslatef(0.1, 0, 0.0);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	glPopMatrix();
+	//----HandMiddleTop----// pyramid
+	glPushMatrix();
+	glColor3f(0.5, 0.5, 1);
+	glTranslatef(0.2, 0.017, 0.026);
+	glRotatef(-11, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	cylinder = gluNewQuadric();		//create quadric obj in the memory
+
+	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cone
+
+	gluCylinder(cylinder, 0.025, 0.0, 0.027, 30, 30);	//draw cone
+	gluDeleteQuadric(cylinder);	//destroy the cone
+
+	glPopMatrix();
+#pragma endregion
+#pragma region Hand Ring Finger
+	//----HandRingFinger----//
+	glColor3f(1, 0, 1);
+	glTranslatef(0, 0, 0.05);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	//----HandPointerMiddle----//
+	glColor3f(1, 0, 1);
+	glPushMatrix();
+
+	glTranslatef(0.1, 0, 0.0);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	glPopMatrix();
+	//----HandThumbTop----// pyramid
+	glPushMatrix();
+	glColor3f(0.5, 0.5, 1);
+	glTranslatef(0.2, 0.017, 0.026);
+	glRotatef(-11, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	cylinder = gluNewQuadric();		//create quadric obj in the memory
+
+	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cone
+
+	gluCylinder(cylinder, 0.025, 0.0, 0.027, 30, 30);	//draw cone
+	gluDeleteQuadric(cylinder);	//destroy the cone
+
+	glPopMatrix();
+#pragma endregion
+#pragma region Hand Pinky
+	//----HandPinky----//
+	glColor3f(0, 1, 1);
+	glTranslatef(0, 0, 0.05);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	//----HandPinklyMiddle----//
+	glColor3f(0, 1, 1);
+	glPushMatrix();
+
+	glTranslatef(0.1, 0, 0.0);
+	// Face 1
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 2 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glEnd();
+	// Face 3 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glEnd();
+	// Face 4 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 5 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.05f);
+	glVertex3f(0.0f, 0.05f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glEnd();
+	// Face 6 …
+	glBegin(GL_QUADS);
+	glVertex3f(0.1f, 0.05f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.05f);
+	glVertex3f(0.1f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.05f, 0.0f);
+	glEnd();
+	glPopMatrix();
+	//----HandPinkyTop----// pyramid
+	glPushMatrix();
+	glColor3f(0.5, 0.5, 1);
+	glTranslatef(0.2, 0.017, 0.026);
+	glRotatef(-11, 0.0, 0.0, 1.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	cylinder = gluNewQuadric();		//create quadric obj in the memory
+	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cone
+	gluCylinder(cylinder, 0.025, 0.0, 0.027, 30, 30);	//draw cone
+	gluDeleteQuadric(cylinder);	//destroy the cone
+
+	glPopMatrix();
+#pragma endregion
+	glPopMatrix();
+	glPopMatrix();
+	glPopMatrix();
+	glPopMatrix();
+	glPopMatrix();
 }
 void display()
 {
 
-	//arm();
-	leg();
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+
+	//----Projection View & Model View----//
+	projection();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	//----Final draw hand----//
+	glPushMatrix();
+
+	LeftHand();
+	RightHand();
+	glPopMatrix();
+
+
 }
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------Void End 
+//--------------------------------------------------------------------
+
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nCmdShow)
 {
 	WNDCLASSEX wc;
@@ -781,7 +1740,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nCmdShow)
 	if (!RegisterClassEx(&wc)) return false;
 
 	HWND hWnd = CreateWindow(WINDOW_TITLE, WINDOW_TITLE, WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
+		CW_USEDEFAULT, CW_USEDEFAULT, 800, 800,
 		NULL, NULL, wc.hInstance, NULL);
 
 	//--------------------------------
@@ -827,4 +1786,3 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nCmdShow)
 
 	return true;
 }
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
