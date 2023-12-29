@@ -1588,9 +1588,14 @@ void Waist()
 	glPopMatrix();
 }
 
-void CompletedLegs()
+void LowerBody()
 {
-#pragma region Completed_Legs	
+#pragma region LowerBody	
+
+	glPushMatrix();
+	Waist();
+	glPopMatrix();
+
 	glPushMatrix();
 		glTranslatef(0.0, -0.1, 0.0);
 		glPushMatrix();
@@ -1641,14 +1646,8 @@ void display()
 	
 	glRotatef(armRotate, 0.0, 0.0, 1.0);
 	glRotatef(armRotate2, 0.0, 1.0, 0.0);
-	//glRotatef(armRotate3, 1.0, 0.0, 0.0);
 
-	//Put waist here
-	glPushMatrix();
-	Waist();
-	glPopMatrix();
-	
-	CompletedLegs();
+	LowerBody();
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------Void End 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nCmdShow)
