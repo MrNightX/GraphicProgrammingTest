@@ -246,7 +246,9 @@ void drawSphere(float r)
 	gluSphere(sphere, r, 30, 30);         //draw sphere
 	gluDeleteQuadric(sphere);				//destroy obj
 }
-void drawCylinder(float tR, float bR, float h) {
+
+void drawCylinder(float tR, float bR, float h) 
+{
 
 	GLUquadricObj* cylinder = NULL;	//declare quadric obj pointer
 	cylinder = gluNewQuadric();		//create quadric obj in the memory
@@ -256,7 +258,9 @@ void drawCylinder(float tR, float bR, float h) {
 	gluCylinder(cylinder, bR, tR, h, 30, 30);	//draw cylinder
 	gluDeleteQuadric(cylinder);	//destroy the cylinder
 }
-void drawCircle(float x, float y) {
+
+void drawCircle(float x, float y) 
+{
 
 	for (float angle = 0; angle <= 3.142 * 2; angle += 3.142 * 2 / 30) {
 		x = -0.6 + 0.1 * cos(angle);
@@ -264,6 +268,7 @@ void drawCircle(float x, float y) {
 		glVertex2f(x, y);
 	}
 }
+
 void Head()
 {
 	glPushMatrix();
@@ -571,7 +576,9 @@ void Head()
 
 	glPopMatrix();
 }
-void LeftHand() {
+
+void LeftHand() 
+{
 
 	glLoadIdentity();
 	glPushMatrix();
@@ -2055,8 +2062,9 @@ void RightHand() {
 	glPopMatrix();
 	glPopMatrix();
 }
-void Body() {
 
+void Body() 
+{
 #pragma region middle sphere
 	//middle sphere
 	glPushMatrix();
@@ -2345,8 +2353,9 @@ void Body() {
 	glEnd();
 #pragma endregion
 }
-void Pipe() {
 
+void Pipe() 
+{
 #pragma region Piping
 	glPushMatrix(); glRotatef(90, 1.0, 0.0, 0.0); glColor3f(1.0, 1.0, 0.0);
 	glTranslatef(-0.9, 0.45, 0);
