@@ -1613,7 +1613,7 @@ void display()
 	
 	glRotatef(armRotate, 0.0, 0.0, 1.0);
 	glRotatef(armRotate2, 0.0, 1.0, 0.0);
-	glRotatef(armRotate3, 1.0, 0.0, 0.0);
+	//glRotatef(armRotate3, 1.0, 0.0, 0.0);
 
 	//Put waist here
 	glPushMatrix();
@@ -1632,7 +1632,7 @@ void display()
 			drawSphere(0.05f);
 			glPopMatrix();
 		
-		leg(0.0); // left leg
+		leg(armRotate3); // left leg controller
 		glPopMatrix();
 
 		glPushMatrix();
@@ -1643,7 +1643,7 @@ void display()
 			glTranslatef(-0.02f, 0.05f, 0.0f);
 			drawSphere(0.05f);
 			glPopMatrix();
-		leg(0.0); // right leg
+		leg(-armRotate3); // right leg controller
 		glPopMatrix();
 	glPopMatrix();
 #pragma endregion 
