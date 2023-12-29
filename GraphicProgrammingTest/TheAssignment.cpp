@@ -1546,13 +1546,13 @@ void RightSidedWaist() //to be reflected to the other side
 	glPushMatrix(); //the middle D
 
 	glTranslatef(0.025, -0.075, 0.0);
-	glColor3f(0.0, 1.0, 0.5);
+	glColor3f(0.0, 1.0, 1.0);
 	drawCube(0.05, 0.15, 0.15);
 
 		glPushMatrix(); //the outer D
 
 		glTranslatef(-0.025, 0.025, -0.075);
-		glColor3f(0.0, 1.0, 0.5);
+		glColor3f(0.0, 1.0, 1.0);
 		drawCube(0.075, 0.15, 0.05);
 
 		glPopMatrix();
@@ -1579,16 +1579,44 @@ void RightSidedWaist() //to be reflected to the other side
 void Waist()
 {
 	glPushMatrix();
-
-	RightSidedWaist();
-
+		RightSidedWaist();
 	glPopMatrix();
 
 	glPushMatrix();
-	glScalef(-1.0f, 1.0, 1.0);
-	RightSidedWaist();
-
+		glScalef(-1.0f, 1.0, 1.0);
+		RightSidedWaist();
 	glPopMatrix();
+}
+
+void CompletedLegs()
+{
+#pragma region Completed_Legs	
+	glPushMatrix();
+		glTranslatef(0.0, -0.1, 0.0);
+		glPushMatrix();
+			glTranslatef(-0.15f, 0.0f, 0.0f);
+			glColor3f(1.0, 1.0, 1.0);
+			//draw the joint
+			glPushMatrix();
+				glTranslatef(0.02f, 0.05f, 0.0f);
+				drawSphere(0.05f);
+			glPopMatrix();
+
+			leg(armRotate3); // left leg controller
+		glPopMatrix();
+
+		glPushMatrix();
+			glTranslatef(0.15f, 0.0f, 0.0f);
+			glColor3f(1.0, 1.0, 1.0);
+			//draw the joint
+			glPushMatrix();
+				glTranslatef(-0.02f, 0.05f, 0.0f);
+				drawSphere(0.05f);
+			glPopMatrix();
+			leg(-armRotate3); // right leg controller
+		glPopMatrix();
+	glPopMatrix();
+#pragma endregion 
 }
 
 void display()
@@ -1620,33 +1648,7 @@ void display()
 	Waist();
 	glPopMatrix();
 	
-#pragma region Completed_Legs	
-	glPushMatrix();
-	glTranslatef(0.0, -0.1, 0.0);
-		glPushMatrix();
-		glTranslatef(-0.15f, 0.0f, 0.0f);
-		glColor3f(1.0, 1.0, 1.0);
-			//draw the joint
-			glPushMatrix();
-			glTranslatef(0.02f, 0.05f, 0.0f);
-			drawSphere(0.05f);
-			glPopMatrix();
-		
-		leg(armRotate3); // left leg controller
-		glPopMatrix();
-
-		glPushMatrix();
-		glTranslatef(0.15f, 0.0f, 0.0f);
-		glColor3f(1.0, 1.0, 1.0);
-			//draw the joint
-			glPushMatrix();
-			glTranslatef(-0.02f, 0.05f, 0.0f);
-			drawSphere(0.05f);
-			glPopMatrix();
-		leg(-armRotate3); // right leg controller
-		glPopMatrix();
-	glPopMatrix();
-#pragma endregion 
+	CompletedLegs();
 }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------Void End 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nCmdShow)
