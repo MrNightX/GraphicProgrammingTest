@@ -2359,20 +2359,13 @@ void Pipe() {
 #pragma endregion
 }
 
-
-void display()
+void UpperBody()
 {
-	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
-	//----Projection View & Model View----//
-	projection();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	//----Final draw hand----//
+#pragma region UpperBody
+
 	glPushMatrix();
 	glPushMatrix();
-	glTranslatef(0.0,0.9,0.0 );
+	glTranslatef(0.0, 0.9, 0.0);
 	Head();
 	glPopMatrix();
 	glPushMatrix();
@@ -2388,6 +2381,21 @@ void display()
 
 	glPopMatrix();
 
+#pragma endregion
+}
+
+void display()
+{
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	//----Projection View & Model View----//
+	projection();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	//----Final draw hand----//
+	
+	UpperBody();
 }
 //--------------------------------------------------------------------
 
