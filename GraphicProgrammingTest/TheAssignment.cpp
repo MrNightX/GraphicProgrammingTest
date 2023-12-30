@@ -134,29 +134,29 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 				if (armRotate > 0) armRotate -= ROTATION_INCREMENT;
 				if (armRotate < 0) armRotate = 0;
 				break;
-			case VK_LEFT:
+			/*case VK_LEFT:
 				if (armRotate3 > -90) armRotate3 -= ROTATION_INCREMENT;
 				if (armRotate3 < -90) armRotate3 = -90;
 				break;
 			case VK_RIGHT:
 				if (armRotate3 < 90) armRotate3 += ROTATION_INCREMENT;
 				if (armRotate3 > 90) armRotate3 = 90;
+				break;*/
+			case VK_H:
+				if (armRotate3 < 20) armRotate3 += ROTATION_INCREMENT;
+				if (armRotate3 > 20) armRotate3 = 20;
 				break;
-			case VK_NUMPAD6:
-				if (armRotate3 < 90) armRotate3 += ROTATION_INCREMENT;
-				if (armRotate3 > 90) armRotate3 = 90;
+			case VK_F:
+				if (armRotate3 > -20) armRotate3 -= ROTATION_INCREMENT;
+				if (armRotate3 < -20) armRotate3 = -20;
 				break;
-			case VK_NUMPAD4:
-				if (armRotate3 > -90) armRotate3 -= ROTATION_INCREMENT;
-				if (armRotate3 < -90) armRotate3 = -90;
+			case VK_G:
+				if (armRotate2 < 40) armRotate2 += ROTATION_INCREMENT;
+				if (armRotate2 > 40) armRotate2 = 40;
 				break;
-			case VK_NUMPAD2:
-				if (armRotate2 < 90) armRotate2 += ROTATION_INCREMENT;
-				if (armRotate2 > 90) armRotate2 = 90;
-				break;
-			case VK_NUMPAD8:
-				if (armRotate2 > -90) armRotate2 -= ROTATION_INCREMENT;
-				if (armRotate2 < -90) armRotate2 = -90;
+			case VK_T:
+				if (armRotate2 > -10) armRotate2 -= ROTATION_INCREMENT;
+				if (armRotate2 < -10) armRotate2 = -10;
 				break;
 			case VK_I:
 				if (headRotate > -60) headRotate -= ROTATION_INCREMENT;
@@ -871,19 +871,136 @@ void Head()
 
 	glPopMatrix();
 }
+void Shoudler() {
 
+#pragma region shoulder sphere
+	glPushMatrix();
+	glColor3f(0.6, 0, 0.6);
+	glTranslatef(0.95, 0.29, 0);
+	GLUquadricObj* sphere = NULL;			//declare quadric obj pointer
+	sphere = gluNewQuadric();				//create quadric obj
+	gluQuadricDrawStyle(sphere, GLU_FILL);	//draw using line
+	gluSphere(sphere, 0.25, 30, 30);         //draw sphere
+	gluDeleteQuadric(sphere);				//destroy obj
+	//-------------------------------------------------------------------------------
+	glPopMatrix();
+
+	glPushMatrix();
+	glColor3f(0.6, 0, 0.6);
+	glTranslatef(-0.95, 0.29, 0);
+	sphere = gluNewQuadric();				//create quadric obj
+	gluQuadricDrawStyle(sphere, GLU_FILL);	//draw using line
+	gluSphere(sphere, 0.25, 30, 30);         //draw sphere
+	gluDeleteQuadric(sphere);				//destroy obj
+	//-------------------------------------------------------------------------------
+	glPopMatrix();
+#pragma endregion
+#pragma region armpit
+	//left side
+	//top
+	glPushMatrix();
+	glScalef(1.50,1.001,1.0);
+	glTranslatef(0-.1,0,0);
+	glBegin(GL_QUADS);
+	glColor3f(1, 1, 1);
+	glTexCoord2f(0.0, 0.0); glVertex3f(1, 0.5, 0.3);
+	glTexCoord2f(0.5, 1.0); glVertex3f(0.3, 0.5, 0.3);
+	glTexCoord2f(1.0, 0.0); glVertex3f(0.3, 0.5, -0.20);
+	glTexCoord2f(0.0, 1.0); glVertex3f(1, 0.5, -0.20);
+	glEnd();
+	//front
+	glBegin(GL_QUADS);
+	glColor3f(1, 1, 1);
+	glTexCoord2f(0.0, 0.0); glVertex3f(1, 0.5, 0.3);
+	glTexCoord2f(0.5, 1.0); glVertex3f(0.3, 0.5, 0.3);
+	glTexCoord2f(1.0, 0.0); glVertex3f(0.3, 0.2, 0.2);
+	glTexCoord2f(0.0, 1.0); glVertex3f(0.8, 0.2, 0.2);
+	glEnd();
+	//back
+	glBegin(GL_QUADS);
+	glColor3f(1, 1, 1);
+	glTexCoord2f(0.0, 0.0); glVertex3f(1, 0.5, -0.20);
+	glTexCoord2f(0.5, 1.0); glVertex3f(0.3, 0.5, -0.2);
+	glTexCoord2f(1.0, 0.0); glVertex3f(0.3, 0.2, -0.1);
+	glTexCoord2f(0.0, 1.0); glVertex3f(0.8, 0.2, -0.1);
+	glEnd();
+	//bottom
+	glBegin(GL_QUADS);
+	glColor3f(1, 1, 1);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.3, 0.2, 0.2);
+	glTexCoord2f(0.5, 1.0); glVertex3f(0.8, 0.2, 0.2);
+	glTexCoord2f(1.0, 0.0); glVertex3f(0.8, 0.2, -0.1);
+	glTexCoord2f(0.0, 1.0); glVertex3f(0.3, 0.2, -0.1);
+	glEnd();
+	//side
+	glBegin(GL_QUADS);
+	glColor3f(1, 1, 1);
+	glTexCoord2f(0.0, 0.0); glVertex3f(1, 0.5, 0.3);
+	glTexCoord2f(0.5, 1.0); glVertex3f(1, 0.5, -0.2);
+	glTexCoord2f(1.0, 0.0); glVertex3f(0.8, 0.2, -0.1);
+	glTexCoord2f(0.0, 1.0); glVertex3f(0.8, 0.2, 0.2);
+	glEnd();
+	glPopMatrix();
+	//rightside
+	//top
+	glPushMatrix();
+	glScalef(1.50, 1.001, 1.0);
+	glTranslatef(0.1, 0, 0);
+	glBegin(GL_QUADS);
+	glColor3f(1, 1, 1);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-1, 0.5, 0.3);
+	glTexCoord2f(0.5, 1.0); glVertex3f(-0.3, 0.5, 0.3);
+	glTexCoord2f(1.0, 0.0); glVertex3f(-0.3, 0.5, -0.20);
+	glTexCoord2f(0.0, 1.0); glVertex3f(-1, 0.5, -0.20);
+	glEnd();
+	//front
+	glBegin(GL_QUADS);
+	glColor3f(1, 1, 1);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-1, 0.5, 0.3);
+	glTexCoord2f(0.5, 1.0); glVertex3f(-0.3, 0.5, 0.3);
+	glTexCoord2f(1.0, 0.0); glVertex3f(-0.3, 0.2, 0.2);
+	glTexCoord2f(0.0, 1.0); glVertex3f(-0.8, 0.2, 0.2);
+	glEnd();
+	//back
+	glBegin(GL_QUADS);
+	glColor3f(1, 1, 1);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-1, 0.5, -0.20);
+	glTexCoord2f(0.5, 1.0); glVertex3f(-0.3, 0.5, -0.2);
+	glTexCoord2f(1.0, 0.0); glVertex3f(-0.3, 0.2, -0.1);
+	glTexCoord2f(0.0, 1.0); glVertex3f(-0.8, 0.2, -0.1);
+	glEnd();
+	//bottom
+	glBegin(GL_QUADS);
+	glColor3f(1, 1, 1);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-0.3, 0.2, 0.2);
+	glTexCoord2f(0.5, 1.0); glVertex3f(-0.8, 0.2, 0.2);
+	glTexCoord2f(1.0, 0.0); glVertex3f(-0.8, 0.2, -0.1);
+	glTexCoord2f(0.0, 1.0); glVertex3f(-0.3, 0.2, -0.1);
+	glEnd();
+	//side
+	glBegin(GL_QUADS);
+	glColor3f(1, 1, 1);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-1, 0.5, 0.3);
+	glTexCoord2f(0.5, 1.0); glVertex3f(-1, 0.5, -0.2);
+	glTexCoord2f(1.0, 0.0); glVertex3f(-0.8, 0.2, -0.1);
+	glTexCoord2f(0.0, 1.0); glVertex3f(-0.8, 0.2, 0.2);
+	glEnd();
+	glPopMatrix();
+#pragma endregion
+
+}
 void LeftHand() 
 {
-
 	glLoadIdentity();
 	glPushMatrix();
-	glScalef(1.2,1.4,1.8);
-	glRotatef(-90, 0.0, 0.0, 1.0);     //rotate 90 degrees so taht arm is down
-	glTranslatef(-0.3, -0.8, 0.0);
+	glScalef(1.4,1.4,1.8);
+	glTranslatef(-0.78,0.26,-0.1);
+	glRotatef(-100, 0.0, 0.0, 1.0);     //rotate 90 degrees so taht arm is down
 	glPushMatrix();
-	glRotatef(armRotate2, 0.0, 0.0, 1.0);
-	glRotatef(armRotate3, 1.0, 0.0, 0.0);
+	glRotatef(-armRotate2, 0.0, 0.0, 1.0);
+	glRotatef(-armRotate3, 0.0, 1.0, 0.0);
 #pragma region shoulder
+
 	//----shoulder----//
 	glColor3f(1, 0, 0);
 	glBegin(GL_QUADS);
@@ -1620,13 +1737,14 @@ void LeftHand()
 void RightHand() {
 	glLoadIdentity();
 	glPushMatrix();
-	glScalef(1.2, 1.4, 1.8);
-	glRotatef(-90, 0.0, 0.0, 1.0);     //rotate 90 degrees so taht arm is down
-	glTranslatef(-0.3, 0.8,0.0);
+	glScalef(1.4, 1.4, 1.8);
+	glRotatef(-80, 0.0, 0.0, 1.0);     //rotate 90 degrees so taht arm is down
+	glTranslatef(-0.1, 0.8,-0.1);
 	glPushMatrix();
-	glRotatef(-armRotate2, 0.0, 0.0, 1.0);
-	glRotatef(-armRotate3, 1.0, 0.0, 0.0);
+	glRotatef(armRotate2, 0.0, 0.0, 1.0);
+	glRotatef(armRotate3, 0.0, 1.0, 0.0);
 #pragma region shoulder
+	
 	//----shoulder----//
 	glColor3f(1, 0, 0);
 	glBegin(GL_QUADS);
@@ -2357,7 +2475,6 @@ void RightHand() {
 	glPopMatrix();
 	glPopMatrix();
 }
-
 void Body() 
 {
 #pragma region middle sphere
@@ -2372,28 +2489,7 @@ void Body()
 	glPopMatrix();
 #pragma endregion
 	glTranslatef(-0.5, -0.5, 0.6);
-#pragma region left hand sphere
-	glPushMatrix();
-	glColor3f(0.6, 0, 0.6);
-	glTranslatef(-0.1, 0.8, -0.45);
-	sphere = gluNewQuadric();				//create quadric obj
-	gluQuadricDrawStyle(sphere, GLU_FILL);	//draw using line
-	gluSphere(sphere, 0.2, 30, 30);         //draw sphere
-	gluDeleteQuadric(sphere);				//destroy obj
-	//-------------------------------------------------------------------------------
-	glPopMatrix();
-#pragma endregion
-#pragma region right hand sphere
-	glPushMatrix();
-	glColor3f(0.6, 0, 0.6);
-	glTranslatef(1.1, 0.8, -0.45);
-	sphere = gluNewQuadric();				//create quadric obj
-	gluQuadricDrawStyle(sphere, GLU_FILL);	//draw using line
-	gluSphere(sphere, 0.2, 30, 30);         //draw sphere
-	gluDeleteQuadric(sphere);				//destroy obj
-	//-------------------------------------------------------------------------------
-	glPopMatrix();
-#pragma endregion
+
 #pragma region neck
 	glPushMatrix(); glRotatef(90, 1.0, 0.0, 0.0); glColor3f(0.0, 1.0, 0.0);
 	glTranslatef(0.5, -0.6, -1.5);
@@ -2460,6 +2556,14 @@ void Body()
 	glColor3f(0.6, 1, 1);
 	glTexCoord2f(0.0, 0.0); glVertex3f(0.1, 0.05, -0.7);
 	glTexCoord2f(0.5, 1.0); glVertex3f(0.9, 0.05, -0.7);
+	glTexCoord2f(1.0, 0.0); glVertex3f(0.9, -0.45, -0.7);
+	glTexCoord2f(0.0, 1.0); glVertex3f(0.1, -0.45, -0.7);
+	glEnd();
+	//abs cover
+	glBegin(GL_QUADS);
+	glColor3f(0.6, 0.3, 1);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.1, -0.45, -0.2);
+	glTexCoord2f(0.5, 1.0); glVertex3f(0.9, -0.45, -0.2);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0.9, -0.45, -0.7);
 	glTexCoord2f(0.0, 1.0); glVertex3f(0.1, -0.45, -0.7);
 	glEnd();
@@ -2648,21 +2752,6 @@ void Body()
 	glEnd();
 #pragma endregion
 }
-
-void Pipe() 
-{
-#pragma region Piping
-	glPushMatrix(); glRotatef(90, 1.0, 0.0, 0.0); glColor3f(1.0, 1.0, 0.0);
-	glTranslatef(-0.9, 0.45, 0);
-	GLUquadricObj* cylinder = NULL;	//declare quadric obj pointer
-	cylinder = gluNewQuadric();		//create quadric obj in the memory
-	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cylinder
-	gluCylinder(cylinder, 0.05, 0.05, 0.5, 30, 30);	//draw cylinder
-	gluDeleteQuadric(cylinder);	//destroy the cylinder
-	glPopMatrix();
-#pragma endregion
-}
-
 void UpperBody()
 {
 #pragma region UpperBody
@@ -2671,6 +2760,7 @@ void UpperBody()
 	glPushMatrix();
 	glTranslatef(0.0, 0.9, 0.0);
 	Head();
+	Shoudler();
 	glPopMatrix();
 	glPushMatrix();
 	LeftHand();
@@ -2680,7 +2770,6 @@ void UpperBody()
 	Body();
 	glPopMatrix();
 	glPushMatrix();
-	Pipe();
 	glPopMatrix();
 
 	glPopMatrix();
