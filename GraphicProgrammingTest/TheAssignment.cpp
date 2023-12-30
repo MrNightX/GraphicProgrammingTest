@@ -61,10 +61,16 @@ float headRotate = 0;
 float headRotate2 = 0;
 const float ROTATION_INCREMENT = 5.0f;
 #pragma region Camera Movement
-float oNear = -10.0, oFar = 10.0;     //ortho near n far
-float pNear = 1.0, pFar = 21.0;     //perspective near n far
 float pRX = 0.0, pRY = 0.0;
 float pRSpeed = 4.0;
+
+float tX = 0, tZ = 0, tSpeed = 1.0;				// translate for the model view
+float ptx = 0, pty = 0, ptSpeed = 1.0;					//translate for the projection
+float pRy = 0.0, prSpeed = 0.1;					// rotation speed for the projection
+float oNear = -10.0, oFar = 10.0;     //ortho near n far
+float pNear = 1.0, pFar = 21.0;     //perspective near n far
+float s1Rad = 3.0;
+
 //	Translation
 //float pTZ = -10.0;
 float bPRX = 0.0;
@@ -82,7 +88,7 @@ float minPTZ = -20;
 float pTSpeed = 0.2;
 
 bool CameraMovement = true;
-bool IsOrtho = false;
+bool isOrtho = false;
 
 bool isLightOn = false;
 float lRotate = 0.0f;
@@ -131,10 +137,10 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			case VK_DOWN: pRX += pRSpeed; break;
 			case VK_LEFT: pRY -= pRSpeed; break;
 			case VK_RIGHT: pRY += pRSpeed; break;
-			case VK_NUMPAD4: if (pTX < maxPTX) pTX += pTSpeed; break;
-			case VK_NUMPAD6: if (pTX > minPTX) pTX -= pTSpeed; break;
-			case VK_NUMPAD2: if (pTY < maxPTY) pTY += pTSpeed; break;
-			case VK_NUMPAD8: if (pTY > minPTY) pTY -= pTSpeed; break;
+			case 'J': if (pTX < maxPTX) pTX += pTSpeed; break;
+			case 'L': if (pTX > minPTX) pTX -= pTSpeed; break;
+			case 'K': if (pTY < maxPTY) pTY += pTSpeed; break;
+			case 'I': if (pTY > minPTY) pTY -= pTSpeed; break;
 			case 'W': if (pTZ < maxPTZ) pTZ += pTSpeed; break;
 			case 'S': if (pTZ > minPTZ) pTZ -= pTSpeed; break;
 			case VK_SPACE: resetCamera(); break;
@@ -160,15 +166,15 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 				if (armRotate3 > -20) armRotate3 -= ROTATION_INCREMENT;
 				if (armRotate3 < -20) armRotate3 = -20;
 				break;
-			case VK_G:
+			case 'G':
 				if (armRotate2 < 40) armRotate2 += ROTATION_INCREMENT;
 				if (armRotate2 > 40) armRotate2 = 40;
 				break;
-			case VK_T:
+			case 'T':
 				if (armRotate2 > -10) armRotate2 -= ROTATION_INCREMENT;
 				if (armRotate2 < -10) armRotate2 = -10;
 				break;
-			case VK_I:
+			case 'I':
 				if (headRotate > -60) headRotate -= ROTATION_INCREMENT;
 				if (headRotate < -60) headRotate = -60;
 				break;
@@ -207,23 +213,67 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 		//changing the z value
 		if (wParam == 0x45)			  //move far
 			posD[2] += lSpeed;
-		if (wParam == 0x51)			// move near  
-
-		if (wParam == 'P') {
+		if (wParam == 0x51)			  // move near  
+			posD[2] -= lSpeed;
+		if (wParam == 'V') {
 			CameraMovement = !CameraMovement;
 		}
-		break;
 		if (wParam == 'O') {
-			CameraMovement = IsOrtho;
+			isOrtho = !isOrtho;
+		}
+		if (wParam == VK_UP) {
+			if (isOrtho) {
+				if (tZ > oNear)
+					tZ -= tSpeed;
+			}
+			else {
+				if (tZ > pNear + s1Rad)
+					tZ -= tSpeed;
+			}
+		}
+		if (wParam == VK_DOWN) {
+			if (isOrtho) {
+				if (tZ < oFar - s1Rad)
+					tZ += tSpeed;
+			}
+			else {
+				if (tZ < pFar)
+					tZ += tSpeed;
+			}
+		}
+		if (wParam == VK_LEFT) {
+			tX -= tSpeed;
+		}
+		if (wParam == VK_RIGHT) {
+			tX += tSpeed;
+		}
+		if (wParam == 'O') {
+			isOrtho = true;
+			tZ = 0;
+			tX = 0;
+		}
+		if (wParam == 'P') {
+			isOrtho = false;
+			tZ = pNear + s1Rad;
+			tX = 0.0;
+		}
+		else if (wParam == 'A') {
+			ptx -= ptSpeed;
+		}
+		else if (wParam == 'D') {
+			ptx += ptSpeed;
+		}
+		else if (wParam == 'L') {
+			pRy += prSpeed;
+		}
+		else if (wParam == 'R') {
+			pRy -= prSpeed;
 		}
 		break;
-
 	default:
 
-		
 		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
-
 	return 0;
 }
 //--------------------------------------------------------------------
@@ -262,18 +312,18 @@ bool initPixelFormat(HDC hdc)
 void projection() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	if (IsOrtho) {
-		glOrtho(-10, 10, -9.0, 9.0, oNear, oFar);
+	
+	if (isOrtho) {
+		glOrtho(-10, 10, -10.0, 10.0, -10, 10);
 	}
 	else {
 		//glFrustum(-8.0, 8.0, -8.0, 8.0, 1.0, 10.0);
 		gluPerspective(60, 1.0, 0.6, 100.0);
-		glTranslatef(pTX, pTY, pTZ);
-		glRotatef(pRX, 1.0, 0.0, 0.0);
-		glRotatef(pRY, 0.0, 1.0, 0.0);
 	}
+	glTranslatef(pTX, pTY, pTZ);
+	glRotatef(pRX, 1.0, 0.0, 0.0);
+	glRotatef(pRY, 0.0, 1.0, 0.0);
 }
-
 
 GLuint loadTexture(LPCSTR fileName) {
 	//take from step 1
@@ -302,7 +352,6 @@ GLuint loadTexture(LPCSTR fileName) {
 	DeleteObject(hBMP);
 	return texture;
 }
-
 void drawSidedTriangle(float Length, float Width, float thickness) // have centering function
 {
 	glPushMatrix();
@@ -361,7 +410,6 @@ void drawSidedTriangle(float Length, float Width, float thickness) // have cente
 
 	glPopMatrix();
 }
-
 void drawRightTriangle(float OnX, float OnY, float thickness) //1st point is on the origin, have centering function
 {
 	glPushMatrix();
@@ -411,7 +459,6 @@ void drawRightTriangle(float OnX, float OnY, float thickness) //1st point is on 
 
 	glPopMatrix();
 }
-
 void drawTrianglePrism(float P1x, float P1y, float P2x, float P2y, float P3x, float P3y, float Thickness) //Drawing on the center of the z, this can get derailled very quickly
 {
 	glPushMatrix();
@@ -455,7 +502,6 @@ void drawTrianglePrism(float P1x, float P1y, float P2x, float P2y, float P3x, fl
 	glEnd();
 	glPopMatrix();
 }
-
 void drawCube(float x, float y, float z) // keep in mind that the cube will always draw and center on the origin, but the z is pointing away from ... you
 {
 	float P_X = x / 2, P_Y = y / 2, P_Z = z / 2;
@@ -515,7 +561,6 @@ void drawCube(float x, float y, float z) // keep in mind that the cube will alwa
 
 	glPopMatrix();
 }
-
 void drawIrregularCube(float TopSize, float BottomSize, float height) //make cube with different top size and bottom size
 {
 	glPushMatrix();
@@ -585,7 +630,6 @@ void drawIrregularCube(float TopSize, float BottomSize, float height) //make cub
 	glEnd();
 	glPopMatrix(); //need to thank Jason for fixing them :)
 }
-
 void drawSphere(float r)
 {
 	//glRotatef(0.01, 1.0, 1.0, 1.0);
@@ -596,7 +640,6 @@ void drawSphere(float r)
 	gluSphere(sphere, r, 30, 30);         //draw sphere
 	gluDeleteQuadric(sphere);				//destroy obj
 }
-
 void drawCylinder(float tR, float bR, float h) 
 {
 
@@ -608,7 +651,6 @@ void drawCylinder(float tR, float bR, float h)
 	gluCylinder(cylinder, bR, tR, h, 30, 30);	//draw cylinder
 	gluDeleteQuadric(cylinder);	//destroy the cylinder
 }
-
 void drawCircle(float x, float y) 
 {
 
@@ -618,7 +660,6 @@ void drawCircle(float x, float y)
 		glVertex2f(x, y);
 	}
 }
-
 void Head()
 {
 	glPushMatrix();
@@ -2834,7 +2875,6 @@ void UpperBody()
 
 #pragma endregion
 }
-
 void leg(float AnimationControl)
 {
 	glPushMatrix();
@@ -3268,7 +3308,6 @@ void leg(float AnimationControl)
 	glPopMatrix();
 	glPopMatrix();
 }
-
 void RightSidedWaist() //to be reflected to the other side
 {
 	glPushMatrix();
@@ -3349,7 +3388,6 @@ void RightSidedWaist() //to be reflected to the other side
 
 	glPopMatrix();
 }
-
 void Waist()
 {
 	glPushMatrix();
@@ -3361,7 +3399,6 @@ void Waist()
 	RightSidedWaist();
 	glPopMatrix();
 }
-
 void LowerBody()
 {
 #pragma region LowerBody	
@@ -3442,7 +3479,7 @@ void display()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	//----Final draw hand----//
-	lighthing();
+	//lighthing();
 	GLuint textureArr[2];
 	textureArr[0] = loadTexture("metal1.bmp");
 	//drawCylinder(0.4, 0.4, 4);
