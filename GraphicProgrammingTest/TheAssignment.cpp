@@ -61,6 +61,8 @@ float headRotate = 0;
 float headRotate2 = 0;
 const float ROTATION_INCREMENT = 5.0f;
 #pragma region Camera Movement
+float oNear = -10.0, oFar = 10.0;     //ortho near n far
+float pNear = 1.0, pFar = 21.0;     //perspective near n far
 float pRX = 0.0, pRY = 0.0;
 float pRSpeed = 4.0;
 //	Translation
@@ -80,6 +82,18 @@ float minPTZ = -20;
 float pTSpeed = 0.2;
 
 bool CameraMovement = true;
+bool IsOrtho = false;
+
+bool isLightOn = false;
+float lRotate = 0.0f;
+float lSpeed = 0.1;
+float amb[3] = { 1.0,1.0,1.0 };			// amb red light
+float posA[3] = { 0.0,0.0,0.0 };		// amb light pos(0,0.8,0)above shape
+float dif[3] = { 1.0,1.0,1.0 };			//green color diffuse light
+float posD[3] = { 0.8,0.0,0.0 };		//dif light pos 0.8,0,0 bot side
+float ambM[3] = { 0.0,0.0,1.0 };		//blue color amb mat
+float difM[3] = { 0.0,0.0,1.0 };		//blue color dif material
+
 
 void resetCamera() {
 	pRX = pRY = 0.0;
@@ -126,7 +140,6 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			case VK_SPACE: resetCamera(); break;
 			default: break;
 			}
-	
 		}
 		else {
 			// Handle arm movements
@@ -138,14 +151,7 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 				if (armRotate > 0) armRotate -= ROTATION_INCREMENT;
 				if (armRotate < 0) armRotate = 0;
 				break;
-			/*case VK_LEFT:
-				if (armRotate3 > -90) armRotate3 -= ROTATION_INCREMENT;
-				if (armRotate3 < -90) armRotate3 = -90;
-				break;
-			case VK_RIGHT:
-				if (armRotate3 < 90) armRotate3 += ROTATION_INCREMENT;
-				if (armRotate3 > 90) armRotate3 = 90;
-				break;*/
+		
 			case VK_H:
 				if (armRotate3 < 20) armRotate3 += ROTATION_INCREMENT;
 				if (armRotate3 > 20) armRotate3 = 20;
@@ -186,13 +192,35 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 				break;
 			}
 		}
+		if (wParam == VK_SPACE)
+			isLightOn = !isLightOn;
+		//changing the x value
+		if (wParam == 0x44)			 //go right
+			posD[0] += lSpeed;
+		if (wParam == 0x41)			// go left
+			posD[0] -= lSpeed;
+		//changing the y value
+		if (wParam == 0x57)			 // move up
+			posD[1] += lSpeed;
+		if (wParam == 0x53)			 //move down
+			posD[1] -= lSpeed;
+		//changing the z value
+		if (wParam == 0x45)			  //move far
+			posD[2] += lSpeed;
+		if (wParam == 0x51)			// move near  
 
 		if (wParam == 'P') {
 			CameraMovement = !CameraMovement;
 		}
 		break;
+		if (wParam == 'O') {
+			CameraMovement = IsOrtho;
+		}
+		break;
 
 	default:
+
+		
 		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
 
@@ -234,12 +262,18 @@ bool initPixelFormat(HDC hdc)
 void projection() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//glFrustum(-8.0, 8.0, -8.0, 8.0, 1.0, 10.0);
-	gluPerspective(60, 1.0, 0.6, 100.0);
-	glTranslatef(pTX, pTY, pTZ);
-	glRotatef(pRX, 1.0, 0.0, 0.0);
-	glRotatef(pRY, 0.0, 1.0, 0.0);
+	if (IsOrtho) {
+		glOrtho(-10, 10, -9.0, 9.0, oNear, oFar);
+	}
+	else {
+		//glFrustum(-8.0, 8.0, -8.0, 8.0, 1.0, 10.0);
+		gluPerspective(60, 1.0, 0.6, 100.0);
+		glTranslatef(pTX, pTY, pTZ);
+		glRotatef(pRX, 1.0, 0.0, 0.0);
+		glRotatef(pRY, 0.0, 1.0, 0.0);
+	}
 }
+
 
 GLuint loadTexture(LPCSTR fileName) {
 	//take from step 1
@@ -308,20 +342,20 @@ void drawSidedTriangle(float Length, float Width, float thickness) // have cente
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(Length / 2, 0.0, -thickness / 2);
-	glVertex3f(Length / 2, 0.0, thickness / 2);
-	glVertex3f(0.0, Width, thickness / 2);
-	glVertex3f(0.0, Width, -thickness / 2);
+	glTexCoord2f(0.0, 0.0); glVertex3f(Length / 2, 0.0, -thickness / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(Length / 2, 0.0, thickness / 2);
+	glTexCoord2f(1, 1); glVertex3f(0.0, Width, thickness / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(0.0, Width, -thickness / 2);
 
 	glEnd();
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.0, Width, -thickness / 2);
-	glVertex3f(0.0, Width, thickness / 2);
-	glVertex3f(-Length / 2, 0.0, thickness / 2);
-	glVertex3f(-Length / 2, 0.0, -thickness / 2);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0, Width, -thickness / 2);
+	glTexCoord2f(1, 0.0);	glVertex3f(0.0, Width, thickness / 2);
+	glTexCoord2f(1, 1);	glVertex3f(-Length / 2, 0.0, thickness / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(-Length / 2, 0.0, -thickness / 2);
 
 	glEnd();
 
@@ -336,52 +370,43 @@ void drawRightTriangle(float OnX, float OnY, float thickness) //1st point is on 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.0, 0.0, -thickness / 2);
-	glVertex3f(OnX, 0.0, -thickness / 2);
-	glVertex3f(0.0, OnY, -thickness / 2);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0, 0.0, -thickness / 2);
+	glTexCoord2f(1, 0.0);	glVertex3f(OnX, 0.0, -thickness / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(0.0, OnY, -thickness / 2);
 
 	glEnd();
 
 	//back face
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
-
-	glVertex3f(0.0, 0.0, thickness / 2);
-	glVertex3f(0.0, OnY, thickness / 2);
-	glVertex3f(OnX, 0.0, thickness / 2);
-
-
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0, 0.0, thickness / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(0.0, OnY, thickness / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(OnX, 0.0, thickness / 2);
 	glEnd();
 
 	//filling
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
-
-	glVertex3f(0.0, 0.0, -thickness / 2);
-	glVertex3f(0.0, 0.0, thickness / 2);
-	glVertex3f(OnX, 0.0, thickness / 2);
-	glVertex3f(OnX, 0.0, -thickness / 2);
-
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0, 0.0, -thickness / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(0.0, 0.0, thickness / 2);
+	glTexCoord2f(1, 1); glVertex3f(OnX, 0.0, thickness / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(OnX, 0.0, -thickness / 2);
 	glEnd();
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
-
-	glVertex3f(OnX, 0.0, -thickness / 2);
-	glVertex3f(OnX, 0.0, thickness / 2);
-	glVertex3f(0.0, OnY, thickness / 2);
-	glVertex3f(0.0, OnY, -thickness / 2);
-
+	glTexCoord2f(0.0, 0.0); glVertex3f(OnX, 0.0, -thickness / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(OnX, 0.0, thickness / 2);
+	glTexCoord2f(1, 1); glVertex3f(0.0, OnY, thickness / 2);
+	glTexCoord2f(0.0 ,1); glVertex3f(0.0, OnY, -thickness / 2);
 	glEnd();
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
-
-	glVertex3f(0.0, OnY, -thickness / 2);
-	glVertex3f(0.0, OnY, thickness / 2);
-	glVertex3f(0.0, 0.0, thickness / 2);
-	glVertex3f(0.0, 0.0, -thickness / 2);
-
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0, OnY, -thickness / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(0.0, OnY, thickness / 2);
+	glTexCoord2f(1, 1); glVertex3f(0.0, 0.0, thickness / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(0.0, 0.0, -thickness / 2);
 	glEnd();
 
 	glPopMatrix();
@@ -394,41 +419,38 @@ void drawTrianglePrism(float P1x, float P1y, float P2x, float P2y, float P3x, fl
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glBegin(GL_POLYGON);
+	glTexCoord2f(0.0, 0.0); glVertex3f(P1x, P1y, Thickness / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(P2x, P2y, Thickness / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(P3x, P3y, Thickness / 2);
+	glEnd();
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
+	glBegin(GL_POLYGON);
+	glTexCoord2f(0.0, 0.0); glVertex3f(P1x, P1y, Thickness / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(P2x, P2y, Thickness / 2);
+	glTexCoord2f(1, 1); glVertex3f(P2x, P2y, -Thickness / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(P1x, P1y, -Thickness / 2);
+	glEnd();
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glBegin(GL_POLYGON);
 
-	glVertex3f(P1x, P1y, Thickness / 2);
-	glVertex3f(P2x, P2y, Thickness / 2);
-	glVertex3f(P3x, P3y, Thickness / 2);
+	glTexCoord2f(0.0, 0.0); glVertex3f(P2x, P2y, Thickness / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(P3x, P3y, Thickness / 2);
+	glTexCoord2f(1, 1); glVertex3f(P3x, P3y, -Thickness / 2);
+	glTexCoord2f(0.0, 1);	glVertex3f(P2x, P2y, -Thickness / 2);
+
+	glTexCoord2f(0.0, 0.0); glVertex3f(P3x, P3y, Thickness / 2);
+	glTexCoord2f(1, 0.0);	glVertex3f(P3x, P3y, -Thickness / 2);
+	glTexCoord2f(1, 1); glVertex3f(P1x, P1y, -Thickness / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(P1x, P1y, Thickness / 2);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(P1x, P1y, Thickness / 2);
-	glVertex3f(P2x, P2y, Thickness / 2);
-	glVertex3f(P2x, P2y, -Thickness / 2);
-	glVertex3f(P1x, P1y, -Thickness / 2);
-
-	glEnd();
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glBegin(GL_POLYGON);
-
-	glVertex3f(P2x, P2y, Thickness / 2);
-	glVertex3f(P3x, P3y, Thickness / 2);
-	glVertex3f(P3x, P3y, -Thickness / 2);
-	glVertex3f(P2x, P2y, -Thickness / 2);
-
-	glVertex3f(P3x, P3y, Thickness / 2);
-	glVertex3f(P3x, P3y, -Thickness / 2);
-	glVertex3f(P1x, P1y, -Thickness / 2);
-	glVertex3f(P1x, P1y, Thickness / 2);
-
-	glEnd();
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glBegin(GL_POLYGON);
-
-	glVertex3f(P1x, P1y, -Thickness / 2);
-	glVertex3f(P2x, P2y, -Thickness / 2);
-	glVertex3f(P3x, P3y, -Thickness / 2);
+	glTexCoord2f(0.0, 0.0); glVertex3f(P1x, P1y, -Thickness / 2);
+	glTexCoord2f(1, 0.0);	glVertex3f(P2x, P2y, -Thickness / 2);
+	glTexCoord2f(0.0, 1);	glVertex3f(P3x, P3y, -Thickness / 2);
 
 	glEnd();
 	glPopMatrix();
@@ -443,52 +465,52 @@ void drawCube(float x, float y, float z) // keep in mind that the cube will alwa
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);//ps: I made sure this can be safely converted into GL_Polygon
-	glVertex3f(0, 0, 0); //front
-	glVertex3f(0, y, 0);
-	glVertex3f(x, y, 0);
-	glVertex3f(x, 0, 0);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0); //front
+	glTexCoord2f(1, 0.0); glVertex3f(0, y, 0);
+	glTexCoord2f(1, 1); glVertex3f(x, y, 0);
+	glTexCoord2f(0.0, 1); glVertex3f(x, 0, 0);
 	glEnd();
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
-	glVertex3f(x, y, -z); //top
-	glVertex3f(x, y, 0);
-	glVertex3f(0, y, 0);
-	glVertex3f(0, y, -z);
+	glTexCoord2f(0.0, 0.0);	glVertex3f(x, y, -z); //top
+	glTexCoord2f(1, 0.0); glVertex3f(x, y, 0);
+	glTexCoord2f(1, 1); glVertex3f(0, y, 0);
+	glTexCoord2f(0.0, 1); glVertex3f(0, y, -z);
 	glEnd();
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
-	glVertex3f(x, 0, -z); //back
-	glVertex3f(x, y, -z);
-	glVertex3f(0, y, -z);
-	glVertex3f(0, 0, -z);
+	glTexCoord2f(0.0, 0.0); glVertex3f(x, 0, -z); //back
+	glTexCoord2f(1, 0.0); glVertex3f(x, y, -z);
+	glTexCoord2f(1, 1); glVertex3f(0, y, -z);
+	glTexCoord2f(0.0, 1); glVertex3f(0, 0, -z);
 	glEnd();
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
-	glVertex3f(0, 0, -z);  //bottom
-	glVertex3f(0, 0, 0);
-	glVertex3f(x, 0, 0);
-	glVertex3f(x, 0, -z);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, -z);  //bottom
+	glTexCoord2f(1, 0.0);	glVertex3f(0, 0, 0);
+	glTexCoord2f(1, 1);	glVertex3f(x, 0, 0);
+	glTexCoord2f(0.0, 1); glVertex3f(x, 0, -z);
 	glEnd();
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 	//left side
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 0, -z);
-	glVertex3f(0, y, -z);
-	glVertex3f(0, y, 0);
+	glTexCoord2f(0.0, 0.0);	glVertex3f(0, 0, 0);
+	glTexCoord2f(1, 0.0); glVertex3f(0, 0, -z);
+	glTexCoord2f(1, 1); glVertex3f(0, y, -z);
+	glTexCoord2f(0.0, 1); glVertex3f(0, y, 0);
 	glEnd();
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 	//right side
-	glVertex3f(x, y, -z);
-	glVertex3f(x, 0, -z);
-	glVertex3f(x, 0, 0);
-	glVertex3f(x, y, 0);
+	glTexCoord2f(0.0, 0.0); glVertex3f(x, y, -z);
+	glTexCoord2f(1, 0.0); glVertex3f(x, 0, -z);
+	glTexCoord2f(1, 1); glVertex3f(x, 0, 0);
+	glTexCoord2f(0.0, 1); glVertex3f(x, y, 0);
 	glEnd();
 
 	glPopMatrix();
@@ -503,10 +525,10 @@ void drawIrregularCube(float TopSize, float BottomSize, float height) //make cub
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(-TopSize / 2, height / 2, -TopWidthSize / 2);
-	glVertex3f(TopSize / 2, height / 2, -TopWidthSize / 2);
-	glVertex3f(TopSize / 2, height / 2, TopWidthSize / 2);
-	glVertex3f(-TopSize / 2, height / 2, TopWidthSize / 2);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-TopSize / 2, height / 2, -TopWidthSize / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(TopSize / 2, height / 2, -TopWidthSize / 2);
+	glTexCoord2f(1, 1); glVertex3f(TopSize / 2, height / 2, TopWidthSize / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(-TopSize / 2, height / 2, TopWidthSize / 2);
 
 	glEnd();
 
@@ -514,10 +536,10 @@ void drawIrregularCube(float TopSize, float BottomSize, float height) //make cub
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(BottomSize / 2, -height / 2, BottomWidthSize / 2);
-	glVertex3f(BottomSize / 2, -height / 2, -BottomWidthSize / 2);
-	glVertex3f(-BottomSize / 2, -height / 2, -BottomWidthSize / 2);
-	glVertex3f(-BottomSize / 2, -height / 2, BottomWidthSize / 2);
+	glTexCoord2f(0.0, 0.0); glVertex3f(BottomSize / 2, -height / 2, BottomWidthSize / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(BottomSize / 2, -height / 2, -BottomWidthSize / 2);
+	glTexCoord2f(1, 1); glVertex3f(-BottomSize / 2, -height / 2, -BottomWidthSize / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(-BottomSize / 2, -height / 2, BottomWidthSize / 2);
 
 	glEnd();
 
@@ -525,40 +547,40 @@ void drawIrregularCube(float TopSize, float BottomSize, float height) //make cub
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(-TopSize / 2, height / 2, -TopWidthSize / 2);
-	glVertex3f(-BottomSize / 2, -height / 2, -BottomWidthSize / 2);
-	glVertex3f(BottomSize / 2, -height / 2, -BottomWidthSize / 2);
-	glVertex3f(TopSize / 2, height / 2, -TopWidthSize / 2);
+	glTexCoord2f(0.0, 0.0);	glVertex3f(-TopSize / 2, height / 2, -TopWidthSize / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(-BottomSize / 2, -height / 2, -BottomWidthSize / 2);
+	glTexCoord2f(1, 1); glVertex3f(BottomSize / 2, -height / 2, -BottomWidthSize / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(TopSize / 2, height / 2, -TopWidthSize / 2);
 
 	glEnd();
 	//right
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(TopSize / 2, height / 2, -TopWidthSize / 2);
-	glVertex3f(BottomSize / 2, -height / 2, -BottomWidthSize / 2);
-	glVertex3f(BottomSize / 2, -height / 2, BottomWidthSize / 2);
-	glVertex3f(TopSize / 2, height / 2, TopWidthSize / 2);
+	glTexCoord2f(0.0, 0.0); glVertex3f(TopSize / 2, height / 2, -TopWidthSize / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(BottomSize / 2, -height / 2, -BottomWidthSize / 2);
+	glTexCoord2f(1, 1); glVertex3f(BottomSize / 2, -height / 2, BottomWidthSize / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(TopSize / 2, height / 2, TopWidthSize / 2);
 
 	glEnd();
 	//back
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(TopSize / 2, height / 2, TopWidthSize / 2);
-	glVertex3f(BottomSize / 2, -height / 2, BottomWidthSize / 2);
-	glVertex3f(-BottomSize / 2, -height / 2, BottomWidthSize / 2);
-	glVertex3f(-TopSize / 2, height / 2, TopWidthSize / 2);
+	glTexCoord2f(0.0, 0.0); glVertex3f(TopSize / 2, height / 2, TopWidthSize / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(BottomSize / 2, -height / 2, BottomWidthSize / 2);
+	glTexCoord2f(1, 1); glVertex3f(-BottomSize / 2, -height / 2, BottomWidthSize / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(-TopSize / 2, height / 2, TopWidthSize / 2);
 
 	glEnd();
 	//left
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(-TopSize / 2, height / 2, TopWidthSize / 2);
-	glVertex3f(-BottomSize / 2, -height / 2, BottomWidthSize / 2);
-	glVertex3f(-BottomSize / 2, -height / 2, -BottomWidthSize / 2);
-	glVertex3f(-TopSize / 2, height / 2, -TopWidthSize / 2);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-TopSize / 2, height / 2, TopWidthSize / 2);
+	glTexCoord2f(1, 0.0); glVertex3f(-BottomSize / 2, -height / 2, BottomWidthSize / 2);
+	glTexCoord2f(1, 1); glVertex3f(-BottomSize / 2, -height / 2, -BottomWidthSize / 2);
+	glTexCoord2f(0.0, 1); glVertex3f(-TopSize / 2, height / 2, -TopWidthSize / 2);
 
 	glEnd();
 	glPopMatrix(); //need to thank Jason for fixing them :)
@@ -570,6 +592,7 @@ void drawSphere(float r)
 	GLUquadricObj* sphere = NULL;			//declare quadric obj pointer
 	sphere = gluNewQuadric();				//create quadric obj
 	gluQuadricDrawStyle(sphere, GLU_FILL);	//draw using line
+	gluQuadricTexture(sphere, true);
 	gluSphere(sphere, r, 30, 30);         //draw sphere
 	gluDeleteQuadric(sphere);				//destroy obj
 }
@@ -581,7 +604,7 @@ void drawCylinder(float tR, float bR, float h)
 	cylinder = gluNewQuadric();		//create quadric obj in the memory
 
 	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cylinder
-
+	gluQuadricTexture(cylinder, true);
 	gluCylinder(cylinder, bR, tR, h, 30, 30);	//draw cylinder
 	gluDeleteQuadric(cylinder);	//destroy the cylinder
 }
@@ -2851,66 +2874,66 @@ void leg(float AnimationControl)
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.0, 0.35, -0.175); //right frontface
-	glVertex3f(0.0, -0.01, -0.225);
-	glVertex3f(0.0, -0.4, -0.175);
-	glVertex3f(0.175, -0.1, -0.05);
-	glVertex3f(0.175, 0.35, -0.05);
+	glTexCoord3f(0.0, 0.0,0); glVertex3f(0.0, 0.35, -0.175); //right frontface
+	glTexCoord3f(1, 0.0,0); glVertex3f(0.0, -0.01, -0.225);
+	glTexCoord3f(0.0, 1,0); glVertex3f(0.0, -0.4, -0.175);
+	glTexCoord3f(0.0, 0.0,1); glVertex3f(0.175, -0.1, -0.05);
+	glTexCoord3f(1, 1,1); glVertex3f(0.175, 0.35, -0.05);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.0, 0.35, -0.125);
-	glVertex3f(0.0, -0.01, -0.205);
-	glVertex3f(0.0, -0.4, -0.125);
-	glVertex3f(0.175, -0.1, -0.03);
-	glVertex3f(0.175, 0.35, -0.03);
+	glTexCoord3f(0.0, 0.0, 0); glVertex3f(0.0, 0.35, -0.125);
+	glTexCoord3f(1, 0.0, 0); glVertex3f(0.0, -0.01, -0.205);
+	glTexCoord3f(0.0, 1, 0); glVertex3f(0.0, -0.4, -0.125);
+	glTexCoord3f(0.0, 0.0, 1); glVertex3f(0.175, -0.1, -0.03);
+	glTexCoord3f(1, 1, 1); glVertex3f(0.175, 0.35, -0.03);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.0, 0.35, -0.175);
-	glVertex3f(0.0, -0.01, -0.225);
-	glVertex3f(0.0, -0.01, -0.205);
-	glVertex3f(0.0, 0.35, -0.125);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0, 0.35, -0.175);
+	glTexCoord2f(1, 0.0); glVertex3f(0.0, -0.01, -0.225);
+	glTexCoord2f(1, 1); glVertex3f(0.0, -0.01, -0.205);
+	glTexCoord2f(0.0, 1); glVertex3f(0.0, 0.35, -0.125);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.0, -0.01, -0.225);
-	glVertex3f(0.0, -0.4, -0.175);
-	glVertex3f(0.0, -0.4, -0.125);
-	glVertex3f(0.0, -0.01, -0.205);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0, -0.01, -0.225);
+	glTexCoord2f(1, 0.0); glVertex3f(0.0, -0.4, -0.175);
+	glTexCoord2f(1, 1); glVertex3f(0.0, -0.4, -0.125);
+	glTexCoord2f(0.0, 1); glVertex3f(0.0, -0.01, -0.205);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.0, -0.4, -0.175);
-	glVertex3f(0.175, -0.1, -0.05);
-	glVertex3f(0.175, -0.1, -0.03);
-	glVertex3f(0.0, -0.4, -0.125);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0, -0.4, -0.175);
+	glTexCoord2f(1, 0.0); glVertex3f(0.175, -0.1, -0.05);
+	glTexCoord2f(1, 1); glVertex3f(0.175, -0.1, -0.03);
+	glTexCoord2f(0.0, 1); glVertex3f(0.0, -0.4, -0.125);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.175, -0.1, -0.05);
-	glVertex3f(0.175, 0.35, -0.05);
-	glVertex3f(0.175, 0.35, -0.03);
-	glVertex3f(0.175, -0.1, -0.03);
+	glTexCoord2f(0.0, 0.0);	glVertex3f(0.175, -0.1, -0.05);
+	glTexCoord2f(1, 0.0); glVertex3f(0.175, 0.35, -0.05);
+	glTexCoord2f(1, 1); glVertex3f(0.175, 0.35, -0.03);
+	glTexCoord2f(0.0, 1); glVertex3f(0.175, -0.1, -0.03);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.175, 0.35, -0.05);
-	glVertex3f(0.0, 0.35, -0.175);
-	glVertex3f(0.0, 0.35, -0.125);
-	glVertex3f(0.175, 0.35, -0.03);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.175, 0.35, -0.05);
+	glTexCoord2f(1, 0.0); glVertex3f(0.0, 0.35, -0.175);
+	glTexCoord2f(1, 1); glVertex3f(0.0, 0.35, -0.125);
+	glTexCoord2f(0.0, 1); glVertex3f(0.175, 0.35, -0.03);
 
 	glEnd();
 
@@ -2919,66 +2942,66 @@ void leg(float AnimationControl)
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.0, 0.35, -0.175); //left frontface
-	glVertex3f(0.0, -0.01, -0.225);
-	glVertex3f(0.0, -0.4, -0.175);
-	glVertex3f(-0.175, -0.1, -0.05);
-	glVertex3f(-0.175, 0.35, -0.05);
+	glTexCoord3f(0.0, 0.0, 0); glVertex3f(0.0, 0.35, -0.175); //left frontface
+	glTexCoord3f(1, 0.0, 0); glVertex3f(0.0, -0.01, -0.225);
+	glTexCoord3f(0.0, 1, 0); glVertex3f(0.0, -0.4, -0.175);
+	glTexCoord3f(0.0, 0.0, 01); glVertex3f(-0.175, -0.1, -0.05);
+	glTexCoord3f(1, 1, 1); glVertex3f(-0.175, 0.35, -0.05);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.0, 0.35, -0.125);
-	glVertex3f(0.0, -0.01, -0.205);
-	glVertex3f(0.0, -0.4, -0.125);
-	glVertex3f(-0.175, -0.1, -0.03);
-	glVertex3f(-0.175, 0.35, -0.03);
+	glTexCoord3f(0.0, 0.0, 0); glVertex3f(0.0, 0.35, -0.125);
+	glTexCoord3f(1, 0.0, 0); glVertex3f(0.0, -0.01, -0.205);
+	glTexCoord3f(0.0, 1, 0); glVertex3f(0.0, -0.4, -0.125);
+	glTexCoord3f(0.0, 0.0, 1); glVertex3f(-0.175, -0.1, -0.03);
+	glTexCoord3f(1, 1, 1); glVertex3f(-0.175, 0.35, -0.03);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.0, 0.35, -0.175);
-	glVertex3f(0.0, -0.01, -0.225);
-	glVertex3f(0.0, -0.01, -0.205);
-	glVertex3f(0.0, 0.35, -0.125);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0, 0.35, -0.175);
+	glTexCoord2f(1, 0.0); glVertex3f(0.0, -0.01, -0.225);
+	glTexCoord2f(1, 1); glVertex3f(0.0, -0.01, -0.205);
+	glTexCoord2f(0.0, 1); glVertex3f(0.0, 0.35, -0.125);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.0, -0.01, -0.225);
-	glVertex3f(0.0, -0.4, -0.175);
-	glVertex3f(0.0, -0.4, -0.125);
-	glVertex3f(0.0, -0.01, -0.205);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0, -0.01, -0.225);
+	glTexCoord2f(1, 0.0); glVertex3f(0.0, -0.4, -0.175);
+	glTexCoord2f(1, 1); glVertex3f(0.0, -0.4, -0.125);
+	glTexCoord2f(0.0, 1); glVertex3f(0.0, -0.01, -0.205);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(0.0, -0.4, -0.175);
-	glVertex3f(-0.175, -0.1, -0.05);
-	glVertex3f(-0.175, -0.1, -0.03);
-	glVertex3f(0.0, -0.4, -0.125);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0, -0.4, -0.175);
+	glTexCoord2f(1, 0.0); glVertex3f(-0.175, -0.1, -0.05);
+	glTexCoord2f(1, 1); glVertex3f(-0.175, -0.1, -0.03);
+	glTexCoord2f(0.0, 1); glVertex3f(0.0, -0.4, -0.125);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(-0.175, -0.1, -0.05);
-	glVertex3f(-0.175, 0.35, -0.05);
-	glVertex3f(-0.175, 0.35, -0.03);
-	glVertex3f(-0.175, -0.1, -0.03);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-0.175, -0.1, -0.05);
+	glTexCoord2f(1, 0.0); glVertex3f(-0.175, 0.35, -0.05);
+	glTexCoord2f(1, 1); glVertex3f(-0.175, 0.35, -0.03);
+	glTexCoord2f(0.0, 1); glVertex3f(-0.175, -0.1, -0.03);
 
 	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
-	glVertex3f(-0.175, 0.35, -0.05);
-	glVertex3f(0.0, 0.35, -0.175);
-	glVertex3f(0.0, 0.35, -0.125);
-	glVertex3f(-0.175, 0.35, -0.03);
+	glTexCoord2f(0.0, 0.0); glVertex3f(-0.175, 0.35, -0.05);
+	glTexCoord2f(1, 0.0); glVertex3f(0.0, 0.35, -0.175);
+	glTexCoord2f(1, 1); glVertex3f(0.0, 0.35, -0.125);
+	glTexCoord2f(0.0, 1); glVertex3f(-0.175, 0.35, -0.03);
 
 	glEnd();
 #pragma endregion
@@ -2998,9 +3021,9 @@ void leg(float AnimationControl)
 		//glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON);
 
-		glVertex3f(0.17, 0.0, 0.025);
-		glVertex3f(0.0, -0.4, 0.14);
-		glVertex3f(0.17, -0.75, 0.025);
+		glTexCoord2f(0.0, 0.0);	glVertex3f(0.17, 0.0, 0.025);
+		glTexCoord2f(1, 0.0); glVertex3f(0.0, -0.4, 0.14);
+		glTexCoord2f(0.0, 1); glVertex3f(0.17, -0.75, 0.025);
 
 		glEnd();
 
@@ -3008,9 +3031,9 @@ void leg(float AnimationControl)
 		//glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON);
 
-		glVertex3f(0.17, 0.0, 0);
-		glVertex3f(0.0, -0.4, 0);
-		glVertex3f(0.17, -0.75, 0);
+		glTexCoord2f(0.0, 0.0); glVertex3f(0.17, 0.0, 0);
+		glTexCoord2f(1, 0.0);	glVertex3f(0.0, -0.4, 0);
+		glTexCoord2f(0.0, 1); glVertex3f(0.17, -0.75, 0);
 
 		glEnd();
 
@@ -3018,74 +3041,74 @@ void leg(float AnimationControl)
 		//glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON);
 
-		glVertex3f(-0.17, 0.0, 0.025);
-		glVertex3f(0.0, -0.4, 0.14);
-		glVertex3f(-0.17, -0.75, 0.025);
+		glTexCoord2f(0.0, 0.0); glVertex3f(-0.17, 0.0, 0.025);
+		glTexCoord2f(1, 0.0); glVertex3f(0.0, -0.4, 0.14);
+		glTexCoord2f(0.0, 1); glVertex3f(-0.17, -0.75, 0.025);
 
 		glEnd();
 
 		//glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON);
 
-		glVertex3f(-0.17, 0.0, 0);
-		glVertex3f(0.0, -0.4, 0);
-		glVertex3f(-0.17, -0.75, 0);
+		glTexCoord2f(0.0, 0.0); glVertex3f(-0.17, 0.0, 0);
+		glTexCoord2f(1, 0.0); glVertex3f(0.0, -0.4, 0);
+		glTexCoord2f(0.0, 1); glVertex3f(-0.17, -0.75, 0);
 
 		glEnd();
 
 		//glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON); //right fill
-		glVertex3f(0.17, 0.0, 0.025);
-		glVertex3f(0.17, 0.0, 0);
-		glVertex3f(0.17, -0.75, 0);
-		glVertex3f(0.17, -0.75, 0.025);
+		glTexCoord2f(0.0, 0.0); glVertex3f(0.17, 0.0, 0.025);
+		glTexCoord2f(1, 0.0); glVertex3f(0.17, 0.0, 0);
+		glTexCoord2f(1, 1); glVertex3f(0.17, -0.75, 0);
+		glTexCoord2f(0.0, 1); glVertex3f(0.17, -0.75, 0.025);
 		glEnd();
 
 		//glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON);
 		{
-			glVertex3f(0.17, 0.0, 0.025);
-			glVertex3f(0.17, 0.0, 0);
-			glVertex3f(0.0, -0.4, 0);
-			glVertex3f(0.0, -0.4, 0.14);
+			glTexCoord2f(0.0, 0.0);	glVertex3f(0.17, 0.0, 0.025);
+			glTexCoord2f(1, 0.0);	glVertex3f(0.17, 0.0, 0);
+			glTexCoord2f(1, 1);	glVertex3f(0.0, -0.4, 0);
+			glTexCoord2f(0.0, 1);	glVertex3f(0.0, -0.4, 0.14);
 		}
 		glEnd();
 
 		//glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON);
 		{
-			glVertex3f(0.17, -0.75, 0.025);
-			glVertex3f(0.17, -0.75, 0);
-			glVertex3f(0.0, -0.4, 0);
-			glVertex3f(0.0, -0.4, 0.14);
+			glTexCoord2f(0.0, 0.0); glVertex3f(0.17, -0.75, 0.025);
+			glTexCoord2f(1, 0.0); glVertex3f(0.17, -0.75, 0);
+			glTexCoord2f(1, 1); glVertex3f(0.0, -0.4, 0);
+			glTexCoord2f(0.0, 1); (0.0, -0.4, 0.14);
 		}
 		glEnd();
 
 		//glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON); //left fill
-		glVertex3f(-0.17, 0.0, 0.025);
-		glVertex3f(-0.17, 0.0, 0);
-		glVertex3f(-0.17, -0.75, 0);
-		glVertex3f(-0.17, -0.75, 0.025);
+		glTexCoord2f(0.0, 0.0);	glVertex3f(-0.17, 0.0, 0.025);
+		glTexCoord2f(1, 0.0); glVertex3f(-0.17, 0.0, 0);
+		glTexCoord2f(1, 1); glVertex3f(-0.17, -0.75, 0);
+		glTexCoord2f(0.0, 1); glVertex3f(-0.17, -0.75, 0.025);
 		glEnd();
 
 		//glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON);
 		{
-			glVertex3f(-0.17, 0.0, 0.025);
-			glVertex3f(-0.17, 0.0, 0);
-			glVertex3f(0.0, -0.4, 0);
-			glVertex3f(0.0, -0.4, 0.14);
+			glTexCoord2f(0.0, 0.0);	glVertex3f(-0.17, 0.0, 0.025);
+			glTexCoord2f(1, 0.0);	glVertex3f(-0.17, 0.0, 0);
+			glTexCoord2f(1, 1);	glVertex3f(0.0, -0.4, 0);
+			glTexCoord2f(0.0, 1);	glVertex3f(0.0, -0.4, 0.14);
 		}
 		glEnd();
 
 		//glPolygonMode(GL_FRONT, GL_LINE);
 		glBegin(GL_POLYGON);
 		{
-			glVertex3f(-0.17, -0.75, 0.025);
-			glVertex3f(-0.17, -0.75, 0);
-			glVertex3f(0.0, -0.4, 0);
-			glVertex3f(0.0, -0.4, 0.14);
+			glTexCoord2f(0.0, 0.0);	glVertex3f(-0.17, -0.75, 0.025);
+			glTexCoord2f(1, 0.0); glVertex3f(-0.17, -0.75, 0);
+			glTexCoord2f(1, 1); glVertex3f(0.0, -0.4, 0);
+			glTexCoord2f(0.0, 1); glVertex3f(0.0, -0.4, 0.14);
 		}
 		glEnd();
 
@@ -3254,10 +3277,10 @@ void RightSidedWaist() //to be reflected to the other side
 	glColor3f(0.0, 1.0, 0.5);
 	glBegin(GL_QUADS);
 
-	glVertex3f(0.0f, 0.05, -0.05);
-	glVertex3f(0.15f, 0.05, -0.05);
-	glVertex3f(0.2f, 0.0, -0.075);
-	glVertex3f(0.0f, 0.0f, -0.075);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0f, 0.05, -0.05);
+	glTexCoord2f(1, 0.0); glVertex3f(0.15f, 0.05, -0.05);
+	glTexCoord2f(1, 1); glVertex3f(0.2f, 0.0, -0.075);
+	glTexCoord2f(0.0, 1); glVertex3f(0.0f, 0.0f, -0.075);
 
 	glEnd();
 
@@ -3265,10 +3288,10 @@ void RightSidedWaist() //to be reflected to the other side
 	glColor3f(0.0, 1.0, 0.5);
 	glBegin(GL_QUADS);
 
-	glVertex3f(0.0f, 0.05, -0.05);
-	glVertex3f(0.0f, 0.05, 0.05);
-	glVertex3f(0.15f, 0.05, 0.05);
-	glVertex3f(0.15f, 0.05, -0.05);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.0f, 0.05, -0.05);
+	glTexCoord2f(1, 0.0); glVertex3f(0.0f, 0.05, 0.05);
+	glTexCoord2f(1, 1); glVertex3f(0.15f, 0.05, 0.05);
+	glTexCoord2f(0.0, 1); glVertex3f(0.15f, 0.05, -0.05);
 
 	glEnd();
 
@@ -3276,10 +3299,10 @@ void RightSidedWaist() //to be reflected to the other side
 	glColor3f(0.0, 1.0, 0.5);
 	glBegin(GL_QUADS);
 
-	glVertex3f(0.15f, 0.05, 0.05);
-	glVertex3f(0.0f, 0.05, 0.05);
-	glVertex3f(0.0f, 0.0f, 0.075);
-	glVertex3f(0.2f, 0.0, 0.075);
+	glTexCoord2f(0.0, 0.0); glVertex3f(0.15f, 0.05, 0.05);
+	glTexCoord2f(1, 0.0); glVertex3f(0.0f, 0.05, 0.05);
+	glTexCoord2f(1, 1); glVertex3f(0.0f, 0.0f, 0.075);
+	glTexCoord2f(0.0, 1); glVertex3f(0.2f, 0.0, 0.075);
 
 	glEnd();
 
@@ -3287,10 +3310,10 @@ void RightSidedWaist() //to be reflected to the other side
 	glColor3f(0.0, 1.0, 0.5);
 	glBegin(GL_QUADS);
 
-	glVertex3f(0.15f, 0.05, -0.05);
-	glVertex3f(0.15f, 0.05, 0.05);
-	glVertex3f(0.2f, 0.0, 0.075);
-	glVertex3f(0.2f, 0.0, -0.075);
+	glTexCoord2f(0.0, 0.0);	glVertex3f(0.15f, 0.05, -0.05);
+	glTexCoord2f(1, 0.0);	glVertex3f(0.15f, 0.05, 0.05);
+	glTexCoord2f(1, 1);	glVertex3f(0.2f, 0.0, 0.075);
+	glTexCoord2f(0.0, 1);	glVertex3f(0.2f, 0.0, -0.075);
 
 	glEnd();
 
@@ -3382,7 +3405,33 @@ void LowerBody()
 	glPopMatrix();//i cant explain this 
 #pragma endregion 
 }
+void Material() {
 
+}
+void lighthing()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+
+	glEnable(GL_LIGHTING);
+
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, dif);
+	glLightfv(GL_LIGHT2, GL_POSITION, posD);
+	if (isLightOn) {
+		glEnable(GL_LIGHT2);
+	}
+	else
+	{
+		glDisable(GL_LIGHT2);
+	}
+
+	glRotatef(lRotate, 0.0, 0.0, 1.0);
+	glColor3f(0.0, 0.0, 1.0);
+
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, ambM);   //blue color amb material
+	//glMaterialfv(GL_FRONT, GL_DIFFUSE, difM);   //blue color dif material
+
+}
 void display()
 {
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -3393,6 +3442,7 @@ void display()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	//----Final draw hand----//
+	lighthing();
 	GLuint textureArr[2];
 	textureArr[0] = loadTexture("metal1.bmp");
 	//drawCylinder(0.4, 0.4, 4);
@@ -3465,103 +3515,3 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nCmdShow)
 
 	return true;
 }
-
-//Diamond
-//glColor3f(0.8, 1.0, 0.8);
-//
-//glPushMatrix();
-//glTranslatef(0.0, 0.1, 0.4);
-//glRotatef(-10, 1.0, 0.0, 0.0);
-//glBindTexture(GL_TEXTURE_2D, textures[4]);
-//
-//glBegin(GL_TRIANGLE_FAN);
-//
-//glTexCoord2f(0.5, 0.5); glVertex3f(0.0, 0.0, 0.02);
-//
-//glColor3f(0.2, 1.0, 0.5);
-//glTexCoord2f(0.0, 0.0); glVertex3f(0.0, 0.07, 0.0);
-//glTexCoord2f(0.0, 0.1); glVertex3f(0.02, 0.0, 0.0);
-//glTexCoord2f(0.1, 0.1); glVertex3f(0.0, -0.07, 0.0);
-//glTexCoord2f(0.1, 0.0); glVertex3f(-0.02, 0.0, 0.0);
-//glTexCoord2f(0.0, 0.0); glVertex3f(0.0, 0.07, 0.0);
-//
-//glEnd(); */
-
-	//	Head Pipe
-	//glBindTexture(GL_TEXTURE_2D, textures[1]);
-
-	//glColor3f(0.5, 0.5, 0.5);
-
-	//glPushMatrix();
-	//glTranslatef(-0.3, -0.15, -0.1);
-	//glRotatef(10, 0.0, 0.0, 1.0);
-	//glRotatef(90, 0.0, 1.0, 0.0);
-
-	//drawCylinder(0.2, 0.2, 0.4);
-	//drawCircle(0.2,0.2);
-
-	//glColor3f(0.3, 0.3, 0.3);
-	//glPushMatrix();
-	//glTranslatef(0.0, 0.0, -0.001);
-
-	//drawCircle(0.15,0.15);
-
-	//glPopMatrix();
-
-	//glPopMatrix();
-
-	//glColor3f(0.5, 0.5, 0.5);
-
-	/*glPushMatrix();
-	glTranslatef(0.3, -0.15, -0.1);
-	glRotatef(170, 0.0, 0.0, 1.0);
-	glRotatef(90, 0.0, 1.0, 0.0);
-
-	drawCylinder(0.2, 0.2, 0.4);
-	drawCircle(0.2,0.2);
-
-	glColor3f(0.3, 0.3, 0.3);
-	glPushMatrix();
-	glTranslatef(0.0, 0.0, -0.001);
-
-	drawCircle(0.15,0.15);
-
-	glPopMatrix();*/
-
-	//	Horn
-		//glBindTexture(GL_TEXTURE_2D, textures[5]);
-		/*glColor3f(0.8, 0.8, 0.0);
-
-		glBegin(GL_TRIANGLE_STRIP);
-
-		glTexCoord2f(0.0, 0.0); glVertex3f(-0.25, 0.07, 0.05);
-		glTexCoord2f(1.0, 0.0); glVertex3f(-0.22, 0.15, 0.12);
-		glTexCoord2f(1.0, 0.0); glVertex3f(-0.2, 0, 0.3);
-
-		glTexCoord2f(1.0, 0.0); glVertex3f(0, 0.1, 0.4);
-
-		glTexCoord2f(0.0, 0.0); glVertex3f(0, -0.1, 0.45);
-
-//		glEnd();*/
-//glColor3f(0.6, 0.6, 0.6);
-//
-//glBegin(GL_TRIANGLE_FAN);
-//
-//glTexCoord2f(1.0, 0.5); glVertex3f(0, 0.4, 0.35);
-//
-//glTexCoord2f(0.0, 0.0); glVertex3f(0.22, 0.15, 0.12);
-//glTexCoord2f(0.0, 1.0); glVertex3f(0, 0.1, 0.4);
-//glTexCoord2f(0.0, 0.0); glVertex3f(-0.22, 0.15, 0.12);
-//
-//glEnd();
-//
-//glBegin(GL_TRIANGLE_FAN);
-//
-//glTexCoord2f(1.0, 0.0); glVertex3f(0, 0.6, 0.0);
-//
-//glTexCoord2f(1.0, 0.0); glVertex3f(0.22, 0.15, 0.12);
-//glTexCoord2f(0.0, 0.0); glVertex3f(0, 0.4, 0.35);
-//glTexCoord2f(1.0, 0.0); glVertex3f(-0.22, 0.15, 0.12);
-//glTexCoord2f(0.0, 0.0); glVertex3f(0.22, 0.15, 0.12);
-//
-//glEnd();
