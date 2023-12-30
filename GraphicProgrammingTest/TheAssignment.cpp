@@ -2478,7 +2478,7 @@ void RightHand() {
 void Body() 
 {
 #pragma region middle sphere
-	//middle sphere
+	//middle sphere//
 	glPushMatrix();
 	glTranslatef(0, 0, 0.5);
 	GLUquadricObj* sphere = NULL;			//declare quadric obj pointer
