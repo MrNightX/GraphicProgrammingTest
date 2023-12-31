@@ -653,6 +653,184 @@ void drawCircle(float x, float y)
 		glVertex2f(x, y);
 	}
 }
+
+void RightSidedShield()
+{
+	glPushMatrix();
+	glScalef(1.0, 1.0, 1.0);
+	//glTranslatef(-0.005, 0.0, 0.0);
+	//glRotatef(-10, 0.0, 1.0, 0.0);
+	glPushMatrix(); //top
+	glTranslatef(0.125, 0.375, 0.0f);
+	glTranslatef(0.0, 0.1, 0.0f);
+
+	drawRightTriangle(0.25, 0.2, 0.1);
+	glPopMatrix();
+
+	glPushMatrix(); //Middle
+	glTranslatef(0.125, 0.0, 0.0);
+
+	drawCube(0.25, 0.75, 0.1);
+	glPopMatrix();
+
+	glPushMatrix(); //Bottom
+	//glRotatef(-10, 1.0, 0.0, 0.0);
+	glTranslatef(0.0, -0.375, 0.0);
+	glTranslatef(0.125, -0.5, 0.0);
+	glRotatef(180, 1.0, 0.0, 0.0);
+
+	drawRightTriangle(0.25, 1.0, 0.1);
+	glPopMatrix();
+
+	glPopMatrix();
+}
+
+void GunPart()
+{
+	glPushMatrix();
+	glPushMatrix(); //Handle
+	glColor3f(0.3, 0.3, 0.3);
+	drawCube(0.1, 0.4, 0.1);
+	glPopMatrix();
+
+	glPushMatrix();
+	glColor3f(0.5, 0.5, 0.5);
+	glTranslatef(0.3, 0.3, 0.0);
+	glPushMatrix(); //Gun Inner Barrel
+	glTranslatef(-0.25, 0.0, 0.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	drawCylinder(0.05, 0.05, 0.5);
+	glPopMatrix();
+	//drawCube(0.5, 0.10, 0.10);
+	glPushMatrix(); //Front Gun barrel
+	glTranslatef(0.075, 0.05, 0.0);
+	glColor3f(0.2, 0.2, 0.2);
+	drawCube(0.25, 0.1, 0.15);
+	glPopMatrix();
+
+	glPushMatrix(); //Back Gun barrel
+	glTranslatef(-0.275, 0.05, 0.0);
+	glColor3f(0.2, 0.2, 0.2);
+	drawCube(0.25, 0.10, 0.15);
+	glPopMatrix();
+
+	glPushMatrix(); //bottom Gun barrel
+	glTranslatef(-0.1, -0.05, 0.0);
+	glColor3f(0.2, 0.2, 0.2);
+	drawCube(0.6, 0.1, 0.15);
+	glPopMatrix();
+	glPopMatrix();
+	glPopMatrix();
+}
+
+void TopSidedSword()
+{
+	glPushMatrix();
+	//glTranslatef(1.3, 0.0, 0.0);
+	glPushMatrix(); //Blade
+	glRotatef(90, 0.0, 1.0, 0.0);
+	glTranslatef(0.0, 0.1, 0.0);
+
+	drawSidedTriangle(0.1, 0.2, 1.5);
+	glPopMatrix();
+
+	glPushMatrix(); //Blade Tips
+
+	glBegin(GL_POLYGON);
+
+	glVertex3f(1.3, 0.0, 0.0);
+	glVertex3f(0.75, 0.0, 0.05);
+	glVertex3f(0.75, 0.2, 0.0);
+	glEnd();
+
+	glBegin(GL_TRIANGLES);
+	glVertex3f(1.3, 0.0, 0.0);
+	glVertex3f(0.75, 0.2, 0.0);
+	glVertex3f(0.75, 0.0, -0.05);
+	glEnd();
+	glPopMatrix();
+
+	glPushMatrix(); //blade hilt
+	glColor3f(0.1, 0.1, 0.1);
+	glTranslatef(-0.8, 0.1, 0.0);
+	drawCube(0.2, 0.3, 0.2);
+	glPopMatrix();
+	glPopMatrix();
+}
+
+void SwordPart()
+{
+	glPushMatrix();
+	//glRotatef(armRotate3, 0.0, 0.0, 1.0);
+	glTranslatef(0.925, 0.25, 0.0);
+	glColor3f(0.5, 0.5, 0.5);
+	TopSidedSword();
+
+	glScalef(1.0, -1.0, 1.0); //copy and reflect
+	glColor3f(0.5, 0.5, 0.5);
+	TopSidedSword();
+
+	glPushMatrix();
+	glTranslatef(-0.325, -0.15, 0.0);
+	glColor3f(0.15, 0.15, 0.15);
+	drawCube(0.75, 0.2, 0.2);
+	glPopMatrix();
+	glPopMatrix();
+}
+#pragma region Weapon
+void Weapon(float AnimaationController)
+{
+	glPushMatrix(); //Shield
+	glPushMatrix();
+	glColor3f(1.0, 1.0, 1.0);
+	//drawSphere(0.2);
+	glPopMatrix();
+
+
+	glRotatef(-90, 0.0, 0.0, 1.0);
+	glTranslatef(0.0, 0.0, 0.25);
+	glPushMatrix(); //right Shield
+	glColor3f(0.7, 0.7, 0.7);
+	RightSidedShield();
+	glScalef(0.75, 0.75, 0.75);
+	glTranslatef(0.0, 0.0, 0.1);
+	glColor3f(0.1, 0.1, 0.7);
+	RightSidedShield();
+	glPopMatrix();
+
+	glPushMatrix(); //left Shield
+	glScalef(-1.0, 1.0, 1.0);
+	glColor3f(0.7, 0.7, 0.7);
+	RightSidedShield();
+	glScalef(0.75, 0.75, 0.75);
+	glTranslatef(0.0, 0.0, 0.1);
+	glColor3f(0.1, 0.1, 0.7);
+	RightSidedShield();
+	glPopMatrix();
+
+	glPopMatrix();
+
+	glPushMatrix();//the knob
+	glColor3f(0.1, 0.1, 0.1);
+	//drawCylinder(0.1, 0.1, 0.2);
+	drawCube(0.5, 0.2, 0.5);
+	glPopMatrix();
+
+	glPushMatrix(); //pls rotate between 2
+	glTranslatef(0.0, 0.0, -0.125);
+	GunPart();
+	glPushMatrix();
+	//pls rotate here 
+	glTranslatef(0.0, -0.25, 0);
+	SwordPart();
+	glPopMatrix();
+
+	glPopMatrix();
+
+}
+#pragma endregion
+
+
 void Head()
 {
 	glPushMatrix();
@@ -1151,6 +1329,13 @@ void LeftHand()
 	//-------------------------------------------------------------------------------
 	glPopMatrix();
 #pragma endregion
+
+	glPushMatrix();
+	glTranslatef(1.0, 0.0, 0.0);
+	glRotatef(90, 1.0, 0.0, 0.0);
+		Weapon(0.0f);
+	glPopMatrix();
+
 #pragma region foreArm
 	//----fore arm----//
 	glPushMatrix();
