@@ -3562,7 +3562,7 @@ void Weapon(float AnimaationController)
 	glPushMatrix(); //Shield
 	glPushMatrix();
 	glColor3f(1.0, 1.0, 1.0);
-		drawSphere(0.2);
+		//drawSphere(0.2);
 	glPopMatrix();
 	
 
