@@ -46,7 +46,7 @@
 #define VK_9 0x39
 #define PI 3.1415927
 #pragma endregion
-#pragma region void
+
 
 bool viewPrac = false;
 int qNo = 1;
@@ -59,6 +59,7 @@ float armRotate2 = 0;
 float armRotate3 = 0;
 float headRotate = 0;
 float headRotate2 = 0;
+
 const float ROTATION_INCREMENT = 5.0f;
 #pragma region Camera Movement
 float pRX = 0.0, pRY = 0.0;
@@ -71,6 +72,7 @@ float oNear = -10.0, oFar = 10.0;     //ortho near n far
 float pNear = 1.0, pFar = 21.0;     //perspective near n far
 float s1Rad = 3.0;
 
+#pragma region translation
 //	Translation
 //float pTZ = -10.0;
 float bPRX = 0.0;
@@ -86,7 +88,8 @@ float minPTY = -3.0;
 float maxPTZ = -2.0;
 float minPTZ = -20;
 float pTSpeed = 0.2;
-
+#pragma endregion
+#pragma region camera
 bool CameraMovement = true;
 bool isOrtho = false;
 
@@ -102,7 +105,7 @@ float difM[3] = { 0.7,0.7,0.7 };		//blue color dif material
 float lRotate = 0.0f;
 bool isLightOn = false;
 int lightNo = 0;
-
+#pragma endregion
 #pragma region MAT 0.1 to 1.0
 float ambeye[3] = { 0.5,0.0,0.0 };		//blue color amb mat
 float ambx2[3] = { 0.2,0,0 };		//blue color amb mat
@@ -131,6 +134,9 @@ void resetCamera() {
 }
 #pragma endregion	
 
+GLfloat translateX = 0.0f;
+GLfloat translateY = 0.0f;
+GLfloat translateZ = 0.0f;
 //declare texturing
 BITMAP BMP;					//bit map Structure
 HBITMAP hBMP = NULL;		//bitmap handle
@@ -680,7 +686,6 @@ void drawCircle(float x, float y)
 		glVertex2f(x, y);
 	}
 }
-
 void RightSidedShield()
 {
 	glPushMatrix();
@@ -711,7 +716,6 @@ void RightSidedShield()
 
 	glPopMatrix();
 }
-
 void GunPart()
 {
 	glPushMatrix();
@@ -749,7 +753,6 @@ void GunPart()
 	glPopMatrix();
 	glPopMatrix();
 }
-
 void TopSidedSword()
 {
 	glPushMatrix();
@@ -784,7 +787,6 @@ void TopSidedSword()
 	glPopMatrix();
 	glPopMatrix();
 }
-
 void SwordPart()
 {
 	glPushMatrix();
@@ -804,6 +806,7 @@ void SwordPart()
 	glPopMatrix();
 	glPopMatrix();
 }
+
 #pragma region Weapon
 void Weapon(float AnimaationController)
 {
@@ -856,7 +859,6 @@ void Weapon(float AnimaationController)
 
 }
 #pragma endregion
-
 
 void Head()
 {
