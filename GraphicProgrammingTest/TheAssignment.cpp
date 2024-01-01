@@ -107,31 +107,41 @@ float dif[3] = { 1.0,1.0,1.0 };			//green color diffuse light
 
 float posD[3] = { 0.8,0.0,0.0 };		//dif light pos 0.8,0,0 bot side
 
-float ambM[3] = { 0.7,0.7,0.7 };		//blue color amb mat
-float difM[3] = { 0.7,0.7,0.7 };		//blue color dif material
+float ambGrey[3] = { 0.5,0.5,0.5 };		//grey color amb mat
+float difGrey[3] = { 0.5,0.5,0.5 };		//grey color dif material
+float ambBlue[3] = { 0.0,0.0,1.0 };		//blue color amb mat
+float difBlue[3] = { 0.0,0.0,1.0 };		//blue color dif material
+float ambGreen[3] = { 1.0,1.0,0 };		//green color amb mat
+float difGreen[3] = { 1.0,1.0,0 };		//green color dif material
+
 float lRotate = 0.0f;
 bool isLightOn = false;
-int lightNo = 0;
+int lightNo = 2;
 #pragma endregion
 #pragma region MAT 0.1 to 1.0
-float ambeye[3] = { 0.5,0.0,0.0 };		//blue color amb mat
-float ambx2[3] = { 0.2,0,0 };		//blue color amb mat
-float ambx3[3] = { 0.3,0,0 };		//blue color amb mat
-float ambx5[3] = { 0.5,0,0 };		//blue color amb mat
-float ambx6[3] = { 0.6,0,0 };		//blue color amb mat
-float ambx8[3] = { 0.8,0,0 };		//blue color amb mat
-float amby10[3] = { 0.0,0,1.0 };		//blue color amb mat
+float ambeye[3] = { 0.5,0.0,0.0 };		
+float ambx2[3] = { 0.2,0,0 };
+float ambx3[3] = { 0.3,0,0 };
+float ambx5[3] = { 0.5,0,0 };		
+float ambx6[3] = { 0.6,0,0 };	
+float ambx8[3] = { 0.8,0,0 };		
+float amby10[3] = { 0.0,0,1.0 };	
 
-float amb1[3] = { 0.1,0.1,0.1 };		//blue color amb mat
-float amb2[3] = { 0.2,0.2,0.2 };		//blue color amb mat
-float amb3[3] = { 0.3,0.3,0.3 };		//blue color amb mat
-float amb4[3] = { 0.4,0.4,0.4 };		//blue color amb mat
-float amb5[3] = { 0.5,0.5,0.5 };		//blue color amb mat
-float amb6[3] = { 0.6,0.6,0.6 };		//blue color amb mat
-float amb7[3] = { 0.7,0.7,0.7 };		//blue color amb mat
-float amb8[3] = { 0.8,0.8,0.8 };		//blue color amb mat
-float amb9[3] = { 0.9,0.9,0.9 };		//blue color amb mat
-float amb10[3] = { 1.0,1.0,1.0 };		//blue color amb mat
+float amb1[3] = { 0.1,0.1,0.1 };	
+float amb2[3] = { 0.2,0.2,0.2 };
+float amb3[3] = { 0.3,0.3,0.3 };	
+float amb4[3] = { 0.4,0.4,0.4 };		
+float amb5[3] = { 0.5,0.5,0.5 };	
+float amb6[3] = { 0.6,0.6,0.6 };	
+float amb7[3] = { 0.7,0.7,0.7 };
+float amb8[3] = { 0.8,0.8,0.8 };
+float amb9[3] = { 0.9,0.9,0.9 };		
+float amb10[3] = { 1.0,1.0,1.0 };
+
+float ambientColor[] = { 1.0f,1.0f,1.0f,1.0f };
+float diffuseColor[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+float lightPosition[] = { 1.0f, 1.0f, 1.0f, 0.0f };
+int currentTextureIndex = 0;
 
 void resetCamera() {
 	pRX = pRY = 0.0;
@@ -145,6 +155,9 @@ GLfloat translateX = 0.0f;
 GLfloat translateY = 0.0f;
 GLfloat translateZ = 0.0f;
 //declare texturing
+int armorNo = 1;
+GLuint textureArr[2];
+GLuint textureArrDif[4];
 BITMAP BMP;					//bit map Structure
 HBITMAP hBMP = NULL;		//bitmap handle
 
@@ -248,7 +261,10 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			case VK_SPACE:
 				LarmRotate = LarmRotate2 = LarmRotate3 = 0;
 				RarmRotate = RarmRotate2 = RarmRotate3 = 0;
+				LlegRotate3 = LlegRotate3 = LarmRotate3 = 0;
+				RlegRotate3 = RlegRotate3 = RarmRotate3 = 0;
 				headRotate = headRotate2 = 0;
+			
 				break;
 			default:
 				break;
@@ -303,7 +319,7 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 		if (wParam == 'M')
 			isLightOn = !isLightOn;
 		if (wParam == 'N')
-			lightNo = abs(lightNo -1);
+			lightNo = (lightNo - 1 + 3) % 3;
 
 		//changing the x value
 		if (wParam == 0x44)			 //go right
@@ -325,6 +341,13 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 		if (wParam == VK_UP)		//anti clockwise rotate
 			lRotate -= lSpeed;
 	
+		if (wParam == 'U') {
+			// Increment the current texture index in a circular manner
+			currentTextureIndex = (currentTextureIndex + 1) % 4;
+
+			// Assign the selected texture to textureArr[0]
+			textureArr[0] = textureArrDif[currentTextureIndex];
+		}
 		break;
 	default:
 
@@ -364,22 +387,6 @@ bool initPixelFormat(HDC hdc)
 		return false;
 	}
 }
-//--------------------------------------------------------------------
-void projection() {
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	
-	if (isOrtho) {
-		glOrtho(-10, 10, -10.0, 10.0, -10, 10);
-	}
-	else {
-		//glFrustum(-8.0, 8.0, -8.0, 8.0, 1.0, 10.0);
-		gluPerspective(60, 1.0, 0.6, 100.0);
-	}
-	glTranslatef(pTX, pTY, pTZ);
-	glRotatef(pRX, 1.0, 0.0, 0.0);
-	glRotatef(pRY, 0.0, 1.0, 0.0);
-}
 
 GLuint loadTexture(LPCSTR fileName) {
 	//take from step 1
@@ -396,7 +403,7 @@ GLuint loadTexture(LPCSTR fileName) {
 
 	glEnable(GL_TEXTURE_2D);
 	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, textureArr[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 		GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
@@ -408,6 +415,45 @@ GLuint loadTexture(LPCSTR fileName) {
 	DeleteObject(hBMP);
 	return texture;
 }
+//--------------------------------------------------------------------
+void texture() {
+
+
+	textureArrDif[0] = loadTexture("ice.bmp");
+	textureArrDif[1] = loadTexture("metal1.bmp");
+	textureArrDif[2] = loadTexture("metal2.bmp");
+	textureArrDif[3] = loadTexture("metal3.bmp");
+
+	if (armorNo == 0) {
+		textureArr[0] = textureArrDif[0];
+	}
+	else if (armorNo == 1) {
+		textureArr[0] = textureArrDif[1];
+	}
+	else {
+		textureArr[0] = textureArrDif[3];
+	}
+
+	glDeleteTextures(1, &textureArr[0]);
+
+
+}
+void projection() {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	
+	if (isOrtho) {
+		glOrtho(-10, 10, -10.0, 10.0, -10, 10);
+	}
+	else {
+		//glFrustum(-8.0, 8.0, -8.0, 8.0, 1.0, 10.0);
+		gluPerspective(60, 1.0, 0.6, 100.0);
+	}
+	glTranslatef(pTX, pTY, pTZ);
+	glRotatef(pRX, 1.0, 0.0, 0.0);
+	glRotatef(pRY, 0.0, 1.0, 0.0);
+}
+
 void drawSidedTriangle(float Length, float Width, float thickness) // have centering function
 {
 	glPushMatrix();
@@ -899,19 +945,19 @@ void Head()
 	// Start Drawing Shapes
 	/*glBindTexture(GL_TEXTURE_2D, textures[3]);*/
 
-	glColor3f(0.2, 0.2, 0.2);glMaterialfv(GL_FRONT, GL_DIFFUSE, amb2);
+	glColor3f(0.2, 0.2, 0.2);
 	drawSphere(0.25);
 #pragma region Eyes
 	glPushMatrix();
 	glTranslatef(-0.1, 0.05, 0.25);
-	glColor3f(0.5, 0, 0);	glMaterialfv(GL_FRONT, GL_DIFFUSE, ambeye);
+	glColor3f(0.5, 0, 0);
 
 	drawSphere(0.08);
 
 	glPopMatrix();
 	glPushMatrix();
 	glTranslatef(0.1, 0.05, 0.25);
-	glColor3f(0.5, 0, 0);	glMaterialfv(GL_FRONT, GL_DIFFUSE, ambeye);
+	glColor3f(0.5, 0, 0);	
 
 	drawSphere(0.08);
 
@@ -3129,6 +3175,7 @@ void Body()
 	glEnd();
 #pragma endregion
 }
+
 void UpperBody()
 {
 #pragma region UpperBody
@@ -3728,66 +3775,75 @@ void LowerBody()
 void lighting()
 {
 	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT5);
+	glLightfv(GL_LIGHT5, GL_AMBIENT, ambientColor); // Set ambient light color
+	glLightfv(GL_LIGHT5, GL_DIFFUSE, diffuseColor); // Set diffuse light color
+	glLightfv(GL_LIGHT5, GL_POSITION, lightPosition); // Set light position
+
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientColor); // Set ambient material color
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseColor); // Set diffuse material color
+
 	glDisable(GL_LIGHT0);
 	glDisable(GL_LIGHT1);
-	
+	glDisable(GL_LIGHT2);
 	if (isLightOn) {
 
 		if (lightNo == 0) {
 			glEnable(GL_LIGHT0);
-			glLightfv(GL_LIGHT0, GL_DIFFUSE, ambM); // Use GL_LIGHT0 here
-			glLightfv(GL_LIGHT0, GL_DIFFUSE, dif); // Use GL_LIGHT0 here
+			glLightfv(GL_LIGHT0, GL_DIFFUSE, ambGrey); // Use GL_LIGHT0 here
+			glLightfv(GL_LIGHT0, GL_DIFFUSE, difGrey); // Use GL_LIGHT0 here
 			glLightfv(GL_LIGHT0, GL_POSITION, posD); // Use GL_LIGHT0 here
 		}
-		else {
+		else if(lightNo ==1){
 			glEnable(GL_LIGHT1);
-			glLightfv(GL_LIGHT0, GL_DIFFUSE, ambM); // Use GL_LIGHT0 here
-			glLightfv(GL_LIGHT1, GL_DIFFUSE, dif); // Use GL_LIGHT1 here
+			glLightfv(GL_LIGHT1, GL_DIFFUSE, ambBlue); // Use GL_LIGHT0 here
+			glLightfv(GL_LIGHT1, GL_DIFFUSE, difBlue); // Use GL_LIGHT1 here
 			glLightfv(GL_LIGHT1, GL_POSITION, posD); // Use GL_LIGHT1 here
 		}
+	else {
+		glEnable(GL_LIGHT2);
+		glLightfv(GL_LIGHT2, GL_DIFFUSE, ambGreen); // Use GL_LIGHT0 here
+		glLightfv(GL_LIGHT2, GL_DIFFUSE, difGreen); // Use GL_LIGHT1 here
+		glLightfv(GL_LIGHT2, GL_POSITION, posD); // Use GL_LIGHT1 here
+	}
 	}
 	else {
 	
 		glDisable(GL_LIGHT0);
 		glDisable(GL_LIGHT1);
+		glDisable(GL_LIGHT2);
 	}
 
 	glRotatef(lRotate, 0.0, 0.0, 1.0);
 	glColor3f(0.0, 0.0, 1.0); glMaterialfv(GL_FRONT, GL_DIFFUSE, amby10);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, ambM); //blue color amb material
-	//glMaterialfv(GL_FRONT, GL_DIFFUSE, difM); //blue color dif material
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, ambBlue); //blue color amb material
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, ambGreen); //green color dif material
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, ambGrey); //grey color dif material
 }
 void display()
 {
-	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
-	if (walking) {
-		if (LarmRotate3 >= 40 || LarmRotate3 <= -40) wSpeed *= -1;
-		LarmRotate3 += wSpeed;
-		RarmRotate3 -= wSpeed;
-		LlegRotate3 += wSpeed;
-		RlegRotate3 -= wSpeed;
-
-	}
+	
 	//----Projection View & Model View----//
-	projection();
 	lighting();
+	projection();
+	texture();
+	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	//----Final draw hand----//
-	
-	GLuint textureArr[2];
-	textureArr[0] = loadTexture("metal1.bmp");
-	//drawCylinder(0.4, 0.4, 4);
+
+
 	UpperBody();
 	LowerBody();
 	glPushMatrix();
 
 	glRotatef(90, 0,-0.5,1);
-
+	
 	glPopMatrix();
-	glDeleteTextures(1, &textureArr[0]);
+
 
 }
 //--------------------------------------------------------------------
