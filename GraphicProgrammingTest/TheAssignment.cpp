@@ -170,13 +170,12 @@ LPCSTR textureArray[2][4] = {
 
 int textureOption = 0;
 float red[4] = { 1, 0, 0, 1 };
-float blue[4] = { 0, 1, 0.792, 1 };
 float white[4] = { 1, 1, 1, 1 };
 float darkGrey[4] = { 0.1, 0.1, 0.1, 1 };
 float lightGrey[4] = { 0.7, 0.7, 0.7, 1 };
 float yellow[4] = { 1, 1, 0, 1 };
 float grey[4] = { 0.6, 0.6, 0.6, 1 };
-float orange[4] = { 1, 0.5, 0, 1 };
+
 float purple[4] = { 0.635,0.404,0.812,1 };
 //background
 float backgroundDegree = 0;
@@ -449,6 +448,7 @@ GLuint loadTexture(LPCSTR fileName) {
 	return texture;
 }
 //--------------------------------------------------------------------
+#pragma region Material lighting projection
 void greyMaterial() {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, white);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, grey);
@@ -480,20 +480,10 @@ void whiteMaterial() {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, white);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
 }
-void orangeMaterial() {
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, white);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, orange);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, orange);
-}
 void purpleMaterial() {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, white);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, purple);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, purple);
-}
-void blueMaterial() {
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, white);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, blue);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, blue);
 }
 void texture(){
 
@@ -567,6 +557,7 @@ void projection() {
 	glRotatef(pRX, 1.0, 0.0, 0.0);
 	glRotatef(pRY, 0.0, 1.0, 0.0);
 }
+#pragma endregion
 
 void drawSidedTriangle(float Length, float Width, float thickness) // have centering function
 {
@@ -866,15 +857,6 @@ void drawCylinder(float tR, float bR, float h)
 	gluQuadricTexture(cylinder, true);
 	gluCylinder(cylinder, bR, tR, h, 30, 30);	//draw cylinder
 	gluDeleteQuadric(cylinder);	//destroy the cylinder
-}
-void drawCircle(float x, float y) 
-{
-
-	for (float angle = 0; angle <= 3.142 * 2; angle += 3.142 * 2 / 30) {
-		x = -0.6 + 0.1 * cos(angle);
-		y = 0.1 * sin(angle);
-		glVertex2f(x, y);
-	}
 }
 void RightSidedShield()
 {
@@ -1235,41 +1217,48 @@ void Head()
 	glTexCoord2f(0.0, 1.0); glVertex3f(0, 0.0, 0.45);
 	glTexCoord2f(1.0, 1.0); glVertex3f(0, -0.15, 0.44);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0, -0.3, 0.2);
-
+	glEnd();
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(0, 0.0, 0.45);
 	glTexCoord2f(0.0, 1.0); glVertex3f(0.1, 0.0, 0.45);
 	glTexCoord2f(1.0, 1.0); glVertex3f(0.1, 0.25, 0.0);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0, 0.4, -0.15);
-
+	glEnd();
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(0.1, 0.25, 0.0);
 	glTexCoord2f(0.0, 1.0); glVertex3f(0, 0.4, -0.15);
 	glTexCoord2f(1.0, 1.0); glVertex3f(0, 0, -0.05);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0.1, 0, 0);
-
+	glEnd();
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, -0.05);
 	glTexCoord2f(0.0, 1.0); glVertex3f(0.1, 0, 0);
 	glTexCoord2f(1.0, 1.0); glVertex3f(0.1, 0, 0.1);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0, 0, 0.05);
-
+	glEnd();
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(0, -0.15, 0.44);
 	glTexCoord2f(0.0, 1.0); glVertex3f(0, -0.3, 0.2);
 	glTexCoord2f(1.0, 1.0); glVertex3f(0.1, -0.3, 0.2);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0.1, -0.15, 0.44);
-
+	glEnd();
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(0, -0.15, 0.44);
 	glTexCoord2f(0.0, 1.0); glVertex3f(0.1, -0.15, 0.44);
 	glTexCoord2f(1.0, 1.0); glVertex3f(0.1, 0.0, 0.45);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0, 0.0, 0.45);
-
+	glEnd();
 	//glBindTexture(GL_TEXTURE_2D, textures[3]);
 
 	glColor3f(0.6, 0.6, 0.6); glMaterialfv(GL_FRONT, GL_DIFFUSE, amb6);
 
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(0.1, 0.15, 0.20);
 	glTexCoord2f(0.0, 1.0); glVertex3f(0.3, 0.1, 0.25);
 	glTexCoord2f(1.0, 1.0); glVertex3f(0.3, 0, 0.45);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0.1, -0.02, 0.45);
-
+	glEnd();
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(0.1, 0.15, 0.20);
 	glTexCoord2f(0.0, 1.0); glVertex3f(0.3, 0.1, 0.25);
 	glTexCoord2f(1.0, 1.0); glVertex3f(0.3, 0, 0);
@@ -1302,43 +1291,51 @@ void Head()
 	glTexCoord2f(0.0, 1.0); glVertex3f(0, 0.0, 0.45);
 	glTexCoord2f(1.0, 1.0); glVertex3f(0, -0.15, 0.44);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0, -0.3, 0.2);
-
+	glEnd();
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(0, 0.0, 0.45);
 	glTexCoord2f(0.0, 1.0); glVertex3f(-0.1, 0.0, 0.45);
 	glTexCoord2f(1.0, 1.0); glVertex3f(-0.1, 0.25, 0.0);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0, 0.4, -0.15);
-
+	glEnd();
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(-0.1, 0.25, 0.0);
 	glTexCoord2f(0.0, 1.0); glVertex3f(0, 0.4, -0.15);
 	glTexCoord2f(1.0, 1.0); glVertex3f(0, 0, -0.05);
 	glTexCoord2f(1.0, 0.0); glVertex3f(-0.1, 0, 0);
-
+	glEnd();
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, -0.05);
 	glTexCoord2f(0.0, 1.0); glVertex3f(-0.1, 0, 0);
 	glTexCoord2f(1.0, 1.0); glVertex3f(-0.1, 0, 0.1);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0, 0, 0.05);
-
+	glEnd();
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(0, -0.15, 0.44);
 	glTexCoord2f(0.0, 1.0); glVertex3f(0, -0.3, 0.2);
 	glTexCoord2f(1.0, 1.0); glVertex3f(-0.1, -0.3, 0.2);
 	glTexCoord2f(1.0, 0.0); glVertex3f(-0.1, -0.15, 0.44);
-
+	glEnd();
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(0, -0.15, 0.44);
 	glTexCoord2f(0.0, 1.0); glVertex3f(-0.1, -0.15, 0.44);
 	glTexCoord2f(1.0, 1.0); glVertex3f(-0.1, 0.0, 0.45);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0, 0.0, 0.45);
+	glEnd();
 
 	glColor3f(0.6, 0.6, 0.6); glMaterialfv(GL_FRONT, GL_DIFFUSE, amb6);
-
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(-0.1, 0.15, 0.20);
 	glTexCoord2f(0.0, 1.0); glVertex3f(-0.3, 0.1, 0.25);
 	glTexCoord2f(1.0, 1.0); glVertex3f(-0.3, 0, 0.45);
 	glTexCoord2f(0.0, 1.0); glVertex3f(-0.1, -0.02, 0.45);
-
+	glEnd();
+	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0); glVertex3f(-0.1, 0.15, 0.20);
 	glTexCoord2f(0.0, 1.0); glVertex3f(-0.3, 0.1, 0.25);
 	glTexCoord2f(1.0, 1.0); glVertex3f(-0.3, 0, 0);
 	glTexCoord2f(0.0, 1.0); glVertex3f(-0.1, -0.02, 0);
+	glEnd();
 
 	glEnd();
 
@@ -1349,7 +1346,8 @@ void Head()
 	glTexCoord2f(0.0, 0.0); glVertex3f(-0.22, 0.15, 0.12);
 	glTexCoord2f(1.0, 0.0); glVertex3f(-0.25, 0.07, 0.05);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0.22, 0.15, 0.12);
-
+	glEnd();
+	glBegin(GL_TRIANGLES);
 	glTexCoord2f(0.0, 0.0); glVertex3f(-0.25, 0.07, 0.05);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0.22, 0.15, 0.12);
 	glTexCoord2f(1.0, 0.0); glVertex3f(0.25, 0.07, 0.05);
@@ -1819,13 +1817,13 @@ void LeftHand()
 	glTranslatef(0.249, 0.16, 0.026);
 	glRotatef(-11, 0.0, 0.0, 1.0);
 	glRotatef(90, 0.0, 1.0, 0.0);
-	GLUquadricObj* cylinder = NULL;	//declare quadric obj pointer
-	cylinder = gluNewQuadric();		//create quadric obj in the memory
+	GLUquadricObj* cone = NULL;	//declare quadric obj pointer
+	cone = gluNewQuadric();		//create quadric obj in the memory
 
 	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cone
-	gluQuadricTexture(cylinder, true);
-	gluCylinder(cylinder, 0.025, 0.0, 0.027, 30, 30);	//draw cone
-	gluDeleteQuadric(cylinder);	//destroy the cone
+	gluQuadricTexture(cone, true);
+	gluCylinder(cone, 0.025, 0.0, 0.027, 30, 30);	//draw cone
+	gluDeleteQuadric(cone);	//destroy the cone
 
 	glPopMatrix();
 #pragma endregion
@@ -1933,6 +1931,7 @@ void LeftHand()
 	glTranslatef(0.2, 0.017, 0.026);
 	glRotatef(-11, 0.0, 0.0, 1.0);
 	glRotatef(90, 0.0, 1.0, 0.0);
+	GLUquadricObj* cylinder = NULL;	//declare quadric obj pointer
 	cylinder = gluNewQuadric();		//create quadric obj in the memory
 	//gluQuadricDrawStyle(cylinder, GLU_LINE);	//draws outline on the cone
 	gluQuadricTexture(cylinder, true);
@@ -3235,8 +3234,6 @@ void Body()
 	glTexCoord2f(0.0, 1.0); glVertex3f(-0.1, 0.9, -0.9);
 	glEnd();
 
-
-
 	glBegin(GL_QUADS);
 	glColor3f(0.3, 0.3, 0.3);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, amb3);
@@ -3388,9 +3385,7 @@ void leg(float AnimationControl)
 	glColor3f(0.2, 0.2, 0.2); glMaterialfv(GL_FRONT, GL_DIFFUSE, amb2);
 	glLineWidth(5);
 	//glPolygonMode(GL_FRONT, GL_LINE);
-	glBegin(GL_POLYGON);
 
-	glEnd();
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glBegin(GL_POLYGON);
 
@@ -3929,7 +3924,7 @@ void LowerBody()
 
 void display()
 {
-	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearColor(0.5, 0.5, 0.5, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	projection();
@@ -3937,22 +3932,16 @@ void display()
 	glLoadIdentity();
 	//----Projection View & Model View----//
 	glEnable(GL_TEXTURE_2D);
-
 	lighting();
 	glEnable(GL_LIGHT0);
-
 	texture();
 	//----Final draw hand----//
-	
 	UpperBody();
 	texture();
 	LowerBody();
 	glPushMatrix();
-
 	glRotatef(90, 0,-0.5,1);
-	
 	glPopMatrix();
-
 
 }
 //--------------------------------------------------------------------
