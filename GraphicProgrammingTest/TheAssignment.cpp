@@ -409,7 +409,7 @@ GLuint loadTexture(LPCSTR fileName) {
 
 	glEnable(GL_TEXTURE_2D);
 	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, textureArr[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 		GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
@@ -421,6 +421,45 @@ GLuint loadTexture(LPCSTR fileName) {
 	DeleteObject(hBMP);
 	return texture;
 }
+//--------------------------------------------------------------------
+void texture() {
+
+
+	textureArrDif[0] = loadTexture("ice.bmp");
+	textureArrDif[1] = loadTexture("metal1.bmp");
+	textureArrDif[2] = loadTexture("metal2.bmp");
+	textureArrDif[3] = loadTexture("metal3.bmp");
+
+	if (armorNo == 0) {
+		textureArr[0] = textureArrDif[0];
+	}
+	else if (armorNo == 1) {
+		textureArr[0] = textureArrDif[1];
+	}
+	else {
+		textureArr[0] = textureArrDif[3];
+	}
+
+	glDeleteTextures(1, &textureArr[0]);
+
+
+}
+void projection() {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	if (isOrtho) {
+		glOrtho(-10, 10, -10.0, 10.0, -10, 10);
+	}
+	else {
+		//glFrustum(-8.0, 8.0, -8.0, 8.0, 1.0, 10.0);
+		gluPerspective(60, 1.0, 0.6, 100.0);
+	}
+	glTranslatef(pTX, pTY, pTZ);
+	glRotatef(pRX, 1.0, 0.0, 0.0);
+	glRotatef(pRY, 0.0, 1.0, 0.0);
+}
+
 void drawSidedTriangle(float Length, float Width, float thickness) // have centering function
 {
 	glPushMatrix();
