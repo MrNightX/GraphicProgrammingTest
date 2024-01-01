@@ -134,6 +134,10 @@ void resetCamera() {
 }
 #pragma endregion	
 
+bool ShootBeam = false;
+float SwordAngle = 0 ;
+bool SwordMode = false;
+
 GLfloat translateX = 0.0f;
 GLfloat translateY = 0.0f;
 GLfloat translateZ = 0.0f;
@@ -172,6 +176,8 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			case 'W': if (pTZ < maxPTZ) pTZ += pTSpeed; break;
 			case 'S': if (pTZ > minPTZ) pTZ -= pTSpeed; break;
 			case VK_SPACE: resetCamera(); break;
+			case VK_F: ShootBeam = !ShootBeam;
+			case VK_Z: SwordMode = !SwordMode;
 			default: break;
 			}
 		}
@@ -348,7 +354,7 @@ void projection() {
 	}
 	glTranslatef(pTX, pTY, pTZ);
 	glRotatef(pRX, 1.0, 0.0, 0.0);
-	glRotatef(pRY, 0.0, 1.0, 0.0);
+	glRotatef(pRY, 0.0, 1.0, 0.0); //----------------------------------------------------------------REMEMBER TO RETURN THE ROTATION
 }
 
 GLuint loadTexture(LPCSTR fileName) {
@@ -727,11 +733,24 @@ void GunPart()
 	glPushMatrix();
 	glColor3f(0.5, 0.5, 0.5);
 	glTranslatef(0.3, 0.3, 0.0);
-	glPushMatrix(); //Gun Inner Barrel
-	glTranslatef(-0.25, 0.0, 0.0);
-	glRotatef(90, 0.0, 1.0, 0.0);
-	drawCylinder(0.05, 0.05, 0.5);
-	glPopMatrix();
+		glPushMatrix(); //Gun Inner Barrel
+		glTranslatef(-0.25, 0.0, 0.0);
+		glRotatef(90, 0.0, 1.0, 0.0);
+		drawCylinder(0.05, 0.05, 0.5);
+		glPopMatrix();
+
+		if (ShootBeam == true)
+		{
+			glPushMatrix(); //Purple lazer beam
+			glTranslatef(0.25, 0.0, 0.0);
+			glRotatef(90, 0.0, 1.0, 0.0);
+
+			glColor3f(1.0, 0.0, 1.0);
+			drawCylinder(0.05, 0.05, 3);
+			glPopMatrix();
+			ShootBeam = false;
+		}
+
 	//drawCube(0.5, 0.10, 0.10);
 	glPushMatrix(); //Front Gun barrel
 	glTranslatef(0.075, 0.05, 0.0);
@@ -782,8 +801,8 @@ void TopSidedSword()
 
 	glPushMatrix(); //blade hilt
 	glColor3f(0.1, 0.1, 0.1);
-	glTranslatef(-0.8, 0.1, 0.0);
-	drawCube(0.2, 0.3, 0.2);
+	glTranslatef(-0.8, 0.2, 0.0);
+	drawCube(0.2, 0.15, 0.1);
 	glPopMatrix();
 	glPopMatrix();
 }
@@ -791,7 +810,7 @@ void SwordPart()
 {
 	glPushMatrix();
 	//glRotatef(armRotate3, 0.0, 0.0, 1.0);
-	glTranslatef(0.925, 0.25, 0.0);
+	glTranslatef(0.925, 0.25, 0.0);  
 	glColor3f(0.5, 0.5, 0.5);
 	TopSidedSword();
 
@@ -802,7 +821,7 @@ void SwordPart()
 	glPushMatrix();
 	glTranslatef(-0.325, -0.15, 0.0);
 	glColor3f(0.15, 0.15, 0.15);
-	drawCube(0.75, 0.2, 0.2);
+	drawCube(0.75, 0.2, 0.1);
 	glPopMatrix();
 	glPopMatrix();
 }
@@ -843,7 +862,8 @@ void Weapon(float AnimaationController)
 	glPushMatrix();//the knob
 	glColor3f(0.1, 0.1, 0.1);
 	//drawCylinder(0.1, 0.1, 0.2);
-	drawCube(0.5, 0.2, 0.5);
+
+	drawCube(1.0, 0.2, 0.5);
 	glPopMatrix();
 
 	glPushMatrix(); //pls rotate between 2
@@ -851,7 +871,30 @@ void Weapon(float AnimaationController)
 	GunPart();
 	glPushMatrix();
 	//pls rotate here 
-	glTranslatef(0.0, -0.25, 0);
+	glTranslatef(0.25, -0.05, 0);
+
+	if (SwordMode)
+	{
+		SwordAngle += ROTATION_INCREMENT;
+
+	}
+	else if (!SwordMode)
+	{
+		if (SwordAngle == 0)
+		{
+			SwordAngle -= ROTATION_INCREMENT;
+		}
+
+		if (SwordAngle == -180)
+		{
+			SwordAngle = -180;
+		}
+	}
+
+	glRotatef(SwordAngle, 0.0, 0.0, 1.0); // --------------------                                      ---------------- SWORD PART ROTATION
+	
+	glTranslatef(0.0, -0.20, 0.25);
+	
 	SwordPart();
 	glPopMatrix();
 
@@ -1363,7 +1406,8 @@ void LeftHand()
 
 	glPushMatrix();
 	glTranslatef(1.0, 0.0, 0.0);
-	glRotatef(90, 1.0, 0.0, 0.0);
+	//glRotatef(180, 0.0, 1.0, 0.0); Backup
+	glRotatef(90, 1.0, 0.0, 0.0); //--------------                            -------------------WEAPON------------------
 		Weapon(0.0f);
 	glPopMatrix();
 
@@ -3735,7 +3779,7 @@ void display()
 
 	//----Projection View & Model View----//
 	projection();
-	lighting();
+	//lighting();
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	//----Final draw hand----//
