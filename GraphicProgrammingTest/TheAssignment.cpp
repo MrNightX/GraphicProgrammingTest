@@ -54,11 +54,16 @@ int qNo = 1;
 int rX = 0, rY = 0, rZ = 0;
 float rSpeed = 0.5;
 
-float armRotate = 0;
-float armRotate2 = 0;
-float armRotate3 = 0;
+float RarmRotate = 0;
+float LarmRotate = 0;
+float RarmRotate2 = 0;
+float RarmRotate3 = 0;
+float LarmRotate2 = 0;
+float LarmRotate3 = 0;
 float headRotate = 0;
 float headRotate2 = 0;
+float LlegRotate3 = 0;
+float RlegRotate3 = 0;
 
 const float ROTATION_INCREMENT = 5.0f;
 #pragma region Camera Movement
@@ -72,6 +77,8 @@ float oNear = -10.0, oFar = 10.0;     //ortho near n far
 float pNear = 1.0, pFar = 21.0;     //perspective near n far
 float s1Rad = 3.0;
 
+bool walking = false;
+float wSpeed = 0.01f;
 #pragma region translation
 //	Translation
 //float pTZ = -10.0;
@@ -159,7 +166,8 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			}
 			else {
 				// Reset arm rotations if not in camera movement mode
-				armRotate = armRotate2 = armRotate3 = 0;
+				LarmRotate = LarmRotate2 = LarmRotate3 = 0;
+				RarmRotate = RarmRotate2 = RarmRotate3 = 0;
 			}
 		}
 		else if (CameraMovement) {
@@ -186,29 +194,47 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			// Handle arm movements
 			switch (wParam) {
 			case VK_UP:
-				if (armRotate < 45) armRotate += ROTATION_INCREMENT;
+				if (LarmRotate < 45) LarmRotate += ROTATION_INCREMENT;
 				break;
 			case VK_DOWN:
-				if (armRotate > 0) armRotate -= ROTATION_INCREMENT;
-				if (armRotate < 0) armRotate = 0;
+				if (RarmRotate > 0) RarmRotate -= ROTATION_INCREMENT;
+				if (LarmRotate < 0) LarmRotate = 0;
 				break;
 		
 			case VK_G:
-				if (armRotate3 < 20) armRotate3 += ROTATION_INCREMENT;
-				if (armRotate3 > 20) armRotate3 = 20;
+				if (LarmRotate3 < 40) LarmRotate3 += ROTATION_INCREMENT;
+				if (LarmRotate3 > 40) LarmRotate3 = 40;
 				break;
 			case VK_T:
-				if (armRotate3 > -20) armRotate3 -= ROTATION_INCREMENT;
-				if (armRotate3 < -20) armRotate3 = -20;
+				if (LarmRotate3 > -40) LarmRotate3 -= ROTATION_INCREMENT;
+				if (LarmRotate3 < -40) LarmRotate3 = -40;
 				break;
-			case 'H':
-				if (armRotate2 < 40) armRotate2 += ROTATION_INCREMENT;
-				if (armRotate2 > 40) armRotate2 = 40;
+			case VK_Y:
+				if (RarmRotate3 < 40) RarmRotate3 += ROTATION_INCREMENT;
+				if (RarmRotate3 > 40) RarmRotate3 = 40;
 				break;
-			case 'F':
-				if (armRotate2 > -10) armRotate2 -= ROTATION_INCREMENT;
-				if (armRotate2 < -10) armRotate2 = -10;
+			case VK_H:
+				if (RarmRotate3 > -40) RarmRotate3 -= ROTATION_INCREMENT;
+				if (RarmRotate3 < -40) RarmRotate3 = -40;
 				break;
+
+			case VK_V:
+				if (LlegRotate3 < 40) LlegRotate3 += ROTATION_INCREMENT;
+				if (LlegRotate3 > 40) LlegRotate3 = 40;
+				break;
+			case VK_B:
+				if (LlegRotate3 > -40) LlegRotate3 -= ROTATION_INCREMENT;
+				if (LlegRotate3 < -40) LlegRotate3 = -40;
+				break;
+			case VK_X:
+				if (RlegRotate3 < 40) RlegRotate3 += ROTATION_INCREMENT;
+				if (RlegRotate3 > 40) RlegRotate3 = 40;
+				break;
+			case VK_C:
+				if (RlegRotate3 > -40) RlegRotate3 -= ROTATION_INCREMENT;
+				if (RlegRotate3 < -40) RlegRotate3 = -40;
+				break;
+		
 			case 'I':
 				if (headRotate > -60) headRotate -= ROTATION_INCREMENT;
 				if (headRotate < -60) headRotate = -60;
@@ -226,15 +252,19 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 				if (headRotate2 > 80) headRotate2 = 80;
 				break;
 			case VK_SPACE:
-				armRotate = armRotate2 = armRotate3 = 0;
+				LarmRotate = LarmRotate2 = LarmRotate3 = 0;
+				RarmRotate = RarmRotate2 = RarmRotate3 = 0;
 				headRotate = headRotate2 = 0;
 				break;
 			default:
 				break;
 			}
 		}
-		
-		if (wParam == 'V') {
+
+		if (wParam == VK_F2) {
+			walking = !walking;
+		}
+		if (wParam == VK_F1) {
 			CameraMovement = !CameraMovement;
 		}
 		if (wParam == 'O') {
@@ -1340,8 +1370,8 @@ void LeftHand()
 	glTranslatef(-0.78,0.26,-0.1);
 	glRotatef(-100, 0.0, 0.0, 1.0);     //rotate 90 degrees so taht arm is down
 	glPushMatrix();
-	glRotatef(-armRotate2, 0.0, 0.0, 1.0);
-	glRotatef(-armRotate3, 0.0, 1.0, 0.0);
+	glRotatef(-LarmRotate2, 0.0, 0.0, 1.0);
+	glRotatef(-LarmRotate3, 0.0, 1.0, 0.0);
 #pragma region shoulder
 
 	//----shoulder----//
@@ -1415,7 +1445,7 @@ void LeftHand()
 	//----fore arm----//
 	glPushMatrix();
 	glTranslatef(0.55, 0.0, 0.0);
-	glRotatef(armRotate, 0.0, 0.0, 0.1);
+	glRotatef(LarmRotate, 0.0, 0.0, 0.1);
 	glColor3f(0.7, 0.7, 0.7); glMaterialfv(GL_FRONT, GL_DIFFUSE, amb7);
 	// Face 1
 	glBegin(GL_QUADS);
@@ -2102,8 +2132,8 @@ void RightHand() {
 	glRotatef(-80, 0.0, 0.0, 1.0);     //rotate 90 degrees so taht arm is down
 	glTranslatef(-0.1, 0.8,-0.1);
 	glPushMatrix();
-	glRotatef(armRotate2, 0.0, 0.0, 1.0);
-	glRotatef(armRotate3, 0.0, 1.0, 0.0);
+	glRotatef(RarmRotate2, 0.0, 0.0, 1.0);
+	glRotatef(RarmRotate3, 0.0, 1.0, 0.0);
 #pragma region shoulder
 	
 	//----shoulder----//
@@ -2170,7 +2200,7 @@ void RightHand() {
 	//----fore arm----//
 	glPushMatrix();
 	glTranslatef(0.55, 0.0, 0.0);
-	glRotatef(-armRotate, 0.0, 0.0, 0.1);
+	glRotatef(-LarmRotate, 0.0, 0.0, 0.1);
 	glColor3f(0.3, 0.3, 0.3);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, amb3);
 	// Face 1
@@ -3719,7 +3749,7 @@ void LowerBody()
 				drawSphere(0.05f);
 				glPopMatrix();
 
-			leg(armRotate3); // left leg controller
+			leg(LlegRotate3); // left leg controller
 		glPopMatrix();
 
 		glPushMatrix();
@@ -3731,7 +3761,7 @@ void LowerBody()
 				glColor3f(0.3, 0, 0); glMaterialfv(GL_FRONT, GL_DIFFUSE, amb3);
 				drawSphere(0.05f);
 				glPopMatrix();
-			leg(-armRotate3); // right leg controller
+			leg(RlegRotate3); // right leg controller
 		glPopMatrix();
 	glPopMatrix();
 
@@ -3776,7 +3806,14 @@ void display()
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
+	if (walking) {
+		if (LarmRotate3 >= 40 || LarmRotate3 <= -40) wSpeed *= -1;
+		LarmRotate3 += wSpeed;
+		RarmRotate3 -= wSpeed;
+		LlegRotate3 += wSpeed;
+		RlegRotate3 -= wSpeed;
 
+	}
 	//----Projection View & Model View----//
 	projection();
 	//lighting();
